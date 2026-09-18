@@ -7,7 +7,7 @@
 #                     device (ipv4/ipv6 conforme o destino) — nunca vem do usuário
 # Tipos de parâmetro: destination | ip | prefix | hostname
 # `timeout:` override do timeout de leitura (default: DEFAULT_COMMAND_TIMEOUT)
-# `parser:` reservado para a fase futura de parsing estruturado do output
+# `parser:` nome de um parser registrado em openglass/parsers (ex.: ping)
 
 commands:
   show-ip-route:
@@ -32,6 +32,7 @@ commands:
     description: "Testar alcance (ping <ip> source <source_address>)"
     template: "ping $ip source $source_address"
     timeout: 60
+    parser: ping
     params:
       ip:
         type: destination

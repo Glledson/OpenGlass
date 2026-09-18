@@ -93,6 +93,12 @@ def test_run_rejects_injection(client) -> None:
 
 def test_run_success_builds_command(client, monkeypatch) -> None:
     captured = {}
+    ping_output = (
+        "Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:\n"
+        "Packet sent with a source address of 192.0.2.10\n"
+        "!!!!!\n"
+        "Success rate is 100 percent (5/5), round-trip min/avg/max = 1/2/3 ms\n"
+    )
 
     class FakeSession:
         def __init__(self, device):
@@ -107,7 +113,7 @@ def test_run_success_builds_command(client, monkeypatch) -> None:
         def run_command(self, command, timeout):
             captured["command"] = command
             captured["timeout"] = timeout
-            return "!! resultado"
+            return ping_output
 
     monkeypatch.setattr(api, "DeviceSession", FakeSession)
 
@@ -118,4 +124,7 @@ def test_run_success_builds_command(client, monkeypatch) -> None:
     assert captured["command"] == "ping 8.8.8.8 source 192.0.2.10"
     body = response.json()
     assert body["command"] == "ping 8.8.8.8 source 192.0.2.10"
-    assert body["output"] == "!! resultado"
+    assert body["output"] == ping_output
+    assert body["parser"] == "ping"
+    assert body["parsed"]["status"] == "success"
+    assert body["parsed"]["target"] == "8.8.8.8"

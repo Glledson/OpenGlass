@@ -110,15 +110,19 @@ def run_command(request: RunRequest) -> dict:
 
     try:
         with DeviceSession(device) as session:
-            output, spec, command = execute_command(
-                session, request.command, request.params
-            )
+            result = execute_command(session, request.command, request.params)
     except DeviceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     except SecurityError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return {"command": command, "description": spec.description, "output": output}
+    return {
+        "command": result.command,
+        "description": result.description,
+        "output": result.raw,
+        "parser": result.parser,
+        "parsed": result.parsed,
+    }
 
 
 def main() -> None:

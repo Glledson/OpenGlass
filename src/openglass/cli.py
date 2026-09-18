@@ -18,7 +18,8 @@ import argparse
 import sys
 from typing import NoReturn
 
-from openglass.commands import CommandNotAllowedError, run as run_command
+from openglass.commands import CommandNotAllowedError, CommandResult
+from openglass.commands import run as run_command
 from openglass.config import settings
 from openglass.connection import DeviceError, DeviceSession
 from openglass.inventory import Device, InventoryError, load_inventory
@@ -61,17 +62,44 @@ def _pick_device(devices: list[Device], reference: str | None) -> Device:
     raise InventoryError(f"Device não encontrado: {reference!r}")
 
 
+_STATUS_MARK = {"success": "✓", "partial": "⚠", "failed": "✗"}
+
+
+def _format_parsed(parsed: dict) -> str | None:
+    """Resumo didático do resultado estruturado (por enquanto, só ping)."""
+    if parsed.get("type") != "ping":
+        return None
+    mark = _STATUS_MARK.get(parsed.get("status"), "•")
+    parts = [
+        f"{mark} ping {parsed.get('target') or '?'} → "
+        f"{parsed.get('received')}/{parsed.get('sent')} recebidos "
+        f"({parsed.get('success_percent')}%)"
+    ]
+    parts.append(f"perda {parsed.get('loss_percent')}%")
+    rtt = parsed.get("rtt_ms")
+    if rtt:
+        parts.append(f"rtt {rtt['min']}/{rtt['avg']}/{rtt['max']} ms")
+    if parsed.get("source"):
+        parts.append(f"origem {parsed['source']}")
+    return " · ".join(parts)
+
+
 def run_and_print(
     session: DeviceSession, label: str, params: dict[str, str] | None = None
-) -> tuple[str, object, str]:
-    """Roda um comando da whitelist do NOS e imprime o output cru formatado."""
-    output, spec, command = run_command(session, label, params)
+) -> CommandResult:
+    """Roda um comando da whitelist do NOS e imprime resumo + output cru."""
+    result = run_command(session, label, params)
+    output = result.raw
     lines = output.splitlines()
     total = len(lines)
     print("\n" + "─" * 60)
-    print(f"[{spec.description} | {label}] {session.device.name}")
-    print(f"$ {command}")
+    print(f"[{result.description} | {label}] {session.device.name}")
+    print(f"$ {result.command}")
     print("─" * 60)
+    summary = _format_parsed(result.parsed) if result.parsed else None
+    if summary:
+        print(summary)
+        print("─" * 60)
     if total <= 500:
         print(output.rstrip())
     else:
@@ -81,7 +109,7 @@ def run_and_print(
         print(f"    uv run python main.py --device {session.device.name} "
               f"--command {label} > saida.txt")
     print("─" * 60)
-    return output, spec, command
+    return result
 
 
 def interactive(session: DeviceSession) -> None:

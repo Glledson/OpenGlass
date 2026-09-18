@@ -15,6 +15,7 @@
       --field: color-mix(in srgb, var(--bg) 55%, var(--card));
       --ok: #22c55e;
       --err: #f87171;
+      --warn: #f59e0b;
       --radius: 14px;
     }
     * { box-sizing: border-box; }
@@ -194,6 +195,159 @@
       word-break: break-word;
     }
 
+    /* ---------- Saída bruta (recolhível) ---------- */
+    details.raw { border-top: 1px solid var(--border); }
+    details.raw > summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 11px 16px;
+      font-size: .74rem;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      user-select: none;
+    }
+    details.raw > summary::-webkit-details-marker { display: none; }
+    details.raw > summary::before { content: "▸ "; }
+    details.raw[open] > summary::before { content: "▾ "; }
+    details.raw > summary:hover { color: var(--accent); }
+
+    /* ---------- Resultado tratado (ping) ---------- */
+    .parsed { padding: 18px; }
+    .ping-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      font-size: .76rem;
+      font-weight: 750;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .badge.success { color: #052e16; background: var(--ok); }
+    .badge.partial { color: #3b2500; background: var(--warn); }
+    .badge.failed  { color: #450a0a; background: var(--err); }
+    .ping-pct {
+      font-size: 1.65rem;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    .ping-pct span {
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      color: var(--muted);
+      margin-left: 6px;
+    }
+    .ping-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 36px;
+      margin: 0 0 16px;
+    }
+    .ping-meta div { display: flex; flex-direction: column; gap: 3px; }
+    .ping-meta dt {
+      font-size: .66rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+    .ping-meta dd {
+      margin: 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .95rem;
+    }
+    .probes { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+    .probe {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 750;
+      font-size: .9rem;
+      border: 1px solid var(--border);
+    }
+    .probe.reply {
+      color: #052e16;
+      background: color-mix(in srgb, var(--ok) 85%, transparent);
+      border-color: transparent;
+    }
+    .probe.timeout {
+      color: #450a0a;
+      background: color-mix(in srgb, var(--err) 80%, transparent);
+      border-color: transparent;
+    }
+    .probe.warn {
+      color: #3b2500;
+      background: color-mix(in srgb, var(--warn) 82%, transparent);
+      border-color: transparent;
+    }
+    .ping-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .stat {
+      background: var(--field);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .stat span {
+      display: block;
+      font-size: .64rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .stat strong { font-size: 1.15rem; font-weight: 700; }
+    .rtt h4 {
+      margin: 0 0 10px;
+      font-size: .7rem;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+    .rtt-row {
+      display: grid;
+      grid-template-columns: 46px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-size: .8rem;
+    }
+    .rtt-row > span { color: var(--muted); }
+    .rtt-track {
+      height: 8px;
+      border-radius: 99px;
+      background: var(--field);
+      overflow: hidden;
+    }
+    .rtt-track > i {
+      display: block;
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent),
+        color-mix(in srgb, var(--accent) 55%, var(--ok)));
+    }
+    .rtt-row b { font-variant-numeric: tabular-nums; }
+    .rtt-empty { color: var(--muted); font-size: .85rem; margin: 0; }
+
     /* ---------- Rodapé / links ---------- */
     nav#links {
       display: flex;
@@ -249,6 +403,8 @@
       .form { grid-template-columns: 1fr; }
       h1 { font-size: 1.7rem; }
       #logo { max-height: 130px; }
+      .ping-stats { grid-template-columns: repeat(2, 1fr); }
+      .ping-pct { font-size: 1.3rem; }
     }
   </style>
 </head>
@@ -291,7 +447,11 @@
         <span class="result-title">Resultado</span>
         <button id="copy" type="button">Copiar</button>
       </div>
-      <pre id="output"></pre>
+      <div id="parsed" class="parsed hidden"></div>
+      <details class="raw" id="raw">
+        <summary>Ver saída bruta</summary>
+        <pre id="output"></pre>
+      </details>
     </section>
 
     <nav id="links"></nav>
@@ -311,6 +471,8 @@
     const $spinner = document.getElementById("spinner");
     const $status = document.getElementById("status");
     const $result = document.getElementById("result");
+    const $parsed = document.getElementById("parsed");
+    const $raw = document.getElementById("raw");
     const $output = document.getElementById("output");
     const $copy = document.getElementById("copy");
     const $siteTitle = document.getElementById("site-title");
@@ -466,6 +628,78 @@
       }
     }
 
+    const PROBE_STYLE = {
+      reply: { cls: "reply", glyph: "✓" },
+      timeout: { cls: "timeout", glyph: "✕" },
+      unreachable: { cls: "warn", glyph: "⚠" },
+    };
+
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (c) => (
+        { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+      ));
+    }
+
+    function probeChip(probe) {
+      const style = PROBE_STYLE[probe.result] || { cls: "warn", glyph: "•" };
+      return `<span class="probe ${style.cls}" title="${esc(probe.label)}">${style.glyph}</span>`;
+    }
+
+    function pingCard(p) {
+      const badges = {
+        success: ["success", "✓ Sucesso"],
+        partial: ["partial", "⚠ Parcial"],
+        failed: ["failed", "✗ Falha"],
+      };
+      const [badgeCls, badgeText] = badges[p.status] || ["partial", esc(p.status)];
+
+      const meta = [
+        `<div><dt>Destino</dt><dd>${esc(p.target || "—")}</dd></div>`,
+        p.source ? `<div><dt>Origem</dt><dd>${esc(p.source)}</dd></div>` : "",
+      ].join("");
+
+      let latency = `<p class="rtt-empty">Sem resposta — não foi possível medir a latência.</p>`;
+      const rtt = p.rtt_ms;
+      if (rtt) {
+        const max = Math.max(rtt.min, rtt.avg, rtt.max, 1);
+        const row = (label, value) => `
+          <div class="rtt-row">
+            <span>${label}</span>
+            <div class="rtt-track"><i style="width:${Math.round((value / max) * 100)}%"></i></div>
+            <b>${value} ms</b>
+          </div>`;
+        latency = `<div class="rtt">
+          <h4>Latência (ida e volta)</h4>
+          ${row("min", rtt.min)}${row("média", rtt.avg)}${row("máx", rtt.max)}
+        </div>`;
+      }
+
+      return `
+        <div class="ping-head">
+          <span class="badge ${badgeCls}">${badgeText}</span>
+          <span class="ping-pct">${p.success_percent}<span>% de sucesso</span></span>
+        </div>
+        <dl class="ping-meta">${meta}</dl>
+        <div class="probes">${(p.probes || []).map(probeChip).join("")}</div>
+        <div class="ping-stats">
+          <div class="stat"><span>Enviados</span><strong>${p.sent}</strong></div>
+          <div class="stat"><span>Recebidos</span><strong>${p.received}</strong></div>
+          <div class="stat"><span>Perda</span><strong>${p.loss_percent}%</strong></div>
+          <div class="stat"><span>Tempo limite</span><strong>${p.timeout_s != null ? p.timeout_s + "s" : "—"}</strong></div>
+        </div>
+        ${latency}`;
+    }
+
+    function renderParsed(parsed) {
+      if (parsed && parsed.type === "ping") {
+        $parsed.innerHTML = pingCard(parsed);
+        $parsed.classList.remove("hidden");
+      } else {
+        $parsed.innerHTML = "";
+        $parsed.classList.add("hidden");
+      }
+    }
+
     async function execute(event) {
       if (event) event.preventDefault();
       const param = currentParam();
@@ -490,8 +724,10 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ device: $device.value, command: $command.value, params }),
         });
-        setStatus(`OK · <code>$ ${result.command}</code>`, "ok");
+        setStatus("");
         $output.textContent = result.output;
+        renderParsed(result.parsed);
+        $raw.open = false;
         $result.classList.remove("hidden");
       } catch (err) {
         setStatus(err.message, "err");

@@ -95,20 +95,57 @@ class TestBuildCommand:
 
 
 class TestRun:
-    def test_run_sends_command_with_source(self) -> None:
+    PING_OUTPUT = (
+        "Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:\n"
+        "Packet sent with a source address of 192.0.2.10\n"
+        "!!!!!\n"
+        "Success rate is 100 percent (5/5), round-trip min/avg/max = 1/2/3 ms\n"
+    )
+
+    def test_run_sends_command_with_source_and_parses(self) -> None:
         class FakeSession:
             device = _device()
             captured: list[str] = []
 
             def run_command(self, command: str, timeout: float) -> str:
                 self.captured.append(command)
-                return "!! resultado cru"
+                return TestRun.PING_OUTPUT
 
         from openglass.commands import run as run_command
 
         session = FakeSession()
-        output, spec, command = run_command(session, "ping", DEST)
+        result = run_command(session, "ping", DEST)
         assert session.captured == ["ping 8.8.8.8 source 192.0.2.10"]
-        assert output == "!! resultado cru"
-        assert command == "ping 8.8.8.8 source 192.0.2.10"
-        assert spec.parser is None  # gancho da fase de parsing
+        assert result.raw == self.PING_OUTPUT
+        assert result.command == "ping 8.8.8.8 source 192.0.2.10"
+        assert result.description
+        assert result.parser == "ping"
+        assert result.parsed is not None
+        assert result.parsed["status"] == "success"
+        assert result.parsed["target"] == "8.8.8.8"
+
+    def test_run_keeps_raw_when_parser_fails(self) -> None:
+        class FakeSession:
+            device = _device()
+
+            def run_command(self, command: str, timeout: float) -> str:
+                return "!! saida fora do formato de ping"
+
+        from openglass.commands import run as run_command
+
+        result = run_command(FakeSession(), "ping", DEST)
+        assert result.raw == "!! saida fora do formato de ping"
+        assert result.parsed is None
+
+    def test_command_without_parser_has_no_parsed(self) -> None:
+        class FakeSession:
+            device = _device()
+
+            def run_command(self, command: str, timeout: float) -> str:
+                return "C 1.1.1.1 is directly connected"
+
+        from openglass.commands import run as run_command
+
+        result = run_command(FakeSession(), "show-ip-route")
+        assert result.parser is None
+        assert result.parsed is None

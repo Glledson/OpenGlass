@@ -13,11 +13,14 @@ Separada da camada de conexão: só conhece a interface da sessão
 """
 
 import re
+from dataclasses import dataclass
 from typing import Callable
 
 from openglass.connection import DeviceSession
 from openglass.inventory import Device
 from openglass.nodes import AUTO_PLACEHOLDERS, NodeCommand, NodeProfile, load_profile
+from openglass.parsers import parse as parse_output
+from openglass.parsers.base import ParserError
 from openglass.security import (
     SecurityError,
     sanitize_parameter,
@@ -39,6 +42,18 @@ _VALIDATORS: dict[str, Callable[[str, str], str]] = {
 
 class CommandNotAllowedError(SecurityError):
     pass
+
+
+@dataclass(frozen=True)
+class CommandResult:
+    """Resultado de um comando: output cru + dados estruturados (opcional)."""
+
+    label: str
+    command: str
+    description: str
+    raw: str
+    parser: str | None = None
+    parsed: dict | None = None
 
 
 def _profile_for(device: Device | None, nos: str | None = None) -> NodeProfile:
@@ -135,12 +150,29 @@ def run(
     session: DeviceSession,
     label: str,
     params: dict[str, str] | None = None,
-) -> tuple[str, NodeCommand, str]:
+) -> CommandResult:
     """Executa um comando da whitelist do NOS do device.
 
-    Retorna (output_cru, NodeCommand, comando_final). Output cru nesta fase.
+    Retorna um `CommandResult` com o output cru e, quando o comando declara um
+    `parser`, os dados estruturados. Falha do parser não quebra a execução: o
+    resultado sai apenas com o output cru (`parsed=None`).
     """
     nos = session.device.nos
     spec, command = build_command(nos, label, params, device=session.device)
-    output = session.run_command(command, timeout=spec.effective_timeout())
-    return output, spec, command
+    raw = session.run_command(command, timeout=spec.effective_timeout())
+
+    parsed: dict | None = None
+    if spec.parser:
+        try:
+            parsed = parse_output(spec.parser, raw)
+        except ParserError:
+            parsed = None
+
+    return CommandResult(
+        label=label,
+        command=command,
+        description=spec.description,
+        raw=raw,
+        parser=spec.parser,
+        parsed=parsed,
+    )

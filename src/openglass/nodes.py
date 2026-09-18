@@ -19,6 +19,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from openglass.config import settings
+from openglass.parsers import PARSER_NAMES
 
 
 class NodeError(Exception):
@@ -70,6 +71,16 @@ class NodeProfile(BaseModel):
                 raise ValueError(
                     f"{self.nos}: comando '{label}' usa placeholder(s) "
                     f"não declarado(s): {sorted(unknown)!r}"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def _check_parsers(self) -> "NodeProfile":
+        for label, command in self.commands.items():
+            if command.parser is not None and command.parser not in PARSER_NAMES:
+                raise ValueError(
+                    f"{self.nos}: comando '{label}' usa parser desconhecido: "
+                    f"{command.parser!r} (disponíveis: {sorted(PARSER_NAMES)!r})"
                 )
         return self
 
