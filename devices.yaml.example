@@ -12,7 +12,7 @@
 # Autenticação por senha OU por chave SSH (credential.key_path).
 
 routers:
-  - name: edge-r1
+  - name: edge-router
     address: 192.168.1.1
     network:
       name: as12345
@@ -26,21 +26,21 @@ routers:
       - name: global
         default: true
         ipv4:
-          source_address: 200.200.200.200
+          source_address: 192.0.2.10
           access_list:
             - network: 0.0.0.0/0
               action: permit
               ge: 8
               le: 32
         ipv6:
-          source_address: 2000:2000:1::1
+          source_address: 2001:db8::1
           access_list:
             - network: ::/0
               action: permit
               ge: 32
               le: 128
 
-  - name: edge-r2
+  - name: edge-router-2
     address: 192.168.1.2
     credential:
       username: netop

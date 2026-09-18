@@ -17,6 +17,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from openglass.commands import build_command
@@ -26,10 +27,12 @@ from openglass.connection import DeviceError, DeviceSession
 from openglass.inventory import InventoryError, find_device, load_inventory
 from openglass.nodes import NodeError, load_profile
 from openglass.security import SecurityError
+from openglass.site import SiteError, load_site_config
 
 STATIC_DIR = Path(__file__).parent / "static"
 
 app = FastAPI(title="OpenGlass", version="0.0.1")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 class RunRequest(BaseModel):
@@ -52,6 +55,15 @@ def _device_or_404(name: str):
 @app.get("/", include_in_schema=False)
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/api/site")
+def site() -> dict:
+    try:
+        config = load_site_config(settings.config_path)
+    except SiteError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return config.frontend_payload()
 
 
 @app.get("/api/devices")
@@ -112,7 +124,13 @@ def run_command(request: RunRequest) -> dict:
 def main() -> None:
     import uvicorn
 
-    uvicorn.run("openglass.api:app", host="127.0.0.1", port=8000)
+    try:
+        config = load_site_config(settings.config_path)
+    except SiteError:
+        config = None
+    host = config.listen_address if config else "127.0.0.1"
+    port = config.listen_port if config else 8000
+    uvicorn.run("openglass.api:app", host=host, port=port)
 
 
 if __name__ == "__main__":

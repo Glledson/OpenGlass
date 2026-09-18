@@ -12,7 +12,7 @@ from openglass.security import SecurityError
 DEST = {"ip": "8.8.8.8"}
 
 
-def _device(source4="45.5.40.255", source6="2000:2000:1::1", vrfs=True) -> Device:
+def _device(source4="192.0.2.10", source6="2001:db8::1", vrfs=True) -> Device:
     return Device(
         name="r1",
         address="192.0.2.1",
@@ -58,14 +58,14 @@ class TestBuildCommand:
 
     def test_ping_uses_ipv4_source_from_vrf(self) -> None:
         _, command = build_command("cisco_ios", "ping", DEST, device=_device())
-        assert command == "ping 8.8.8.8 source 45.5.40.255"
+        assert command == "ping 8.8.8.8 source 192.0.2.10"
 
     def test_ping_ipv6_uses_ipv6_source(self) -> None:
         device = _device()
         _, command = build_command(
             "cisco_ios", "ping", {"ip": "2001:4860:4860::8888"}, device=device
         )
-        assert command == "ping 2001:4860:4860::8888 source 2000:2000:1::1"
+        assert command == "ping 2001:4860:4860::8888 source 2001:db8::1"
 
     def test_ping_without_configured_source(self) -> None:
         _, command = build_command("cisco_ios", "ping", DEST, device=_device(source4=None, source6=None))
@@ -108,7 +108,7 @@ class TestRun:
 
         session = FakeSession()
         output, spec, command = run_command(session, "ping", DEST)
-        assert session.captured == ["ping 8.8.8.8 source 45.5.40.255"]
+        assert session.captured == ["ping 8.8.8.8 source 192.0.2.10"]
         assert output == "!! resultado cru"
-        assert command == "ping 8.8.8.8 source 45.5.40.255"
+        assert command == "ping 8.8.8.8 source 192.0.2.10"
         assert spec.parser is None  # gancho da fase de parsing

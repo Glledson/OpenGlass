@@ -24,16 +24,38 @@
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
       display: flex;
       justify-content: center;
-      padding: 40px 16px;
+      padding: 32px 16px;
     }
-    main { width: 100%; max-width: 760px; }
-    h1 {
-      font-size: 2rem;
-      margin: 0;
-      letter-spacing: -0.02em;
+    main { width: 100%; max-width: 860px; }
+
+    header.top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
     }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { max-height: 46px; max-width: 220px; }
+    h1 { font-size: 1.8rem; margin: 0; letter-spacing: -0.02em; }
     h1 span { color: var(--accent); }
-    .sub { color: var(--muted); margin: 4px 0 28px; font-size: .9rem; }
+    .sub { color: var(--muted); margin: 2px 0 0; font-size: .88rem; }
+
+    nav#links { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+    nav#links a, nav#links button {
+      color: var(--muted);
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      font-size: .82rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    nav#links a:hover, nav#links button:hover { color: var(--accent); text-decoration: underline; }
+    nav#links .sep { color: var(--border); }
+
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -60,7 +82,7 @@
     }
     select:focus, input:focus { outline: 2px solid var(--accent); border-color: transparent; }
     input:disabled { opacity: .45; cursor: not-allowed; }
-    button {
+    button#run {
       width: 100%;
       padding: 12px;
       border: none;
@@ -71,11 +93,11 @@
       font-weight: 700;
       cursor: pointer;
     }
-    button:disabled { opacity: .5; cursor: not-allowed; }
+    button#run:disabled { opacity: .5; cursor: not-allowed; }
     #status { min-height: 20px; margin-top: 14px; font-size: .85rem; color: var(--muted); }
     #status.err { color: var(--err); }
     #status.ok { color: var(--ok); }
-    pre {
+    pre#output {
       margin-top: 14px;
       background: #0b1220;
       border: 1px solid var(--border);
@@ -88,14 +110,39 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
-    .cmd { color: var(--accent); font-family: ui-monospace, monospace; font-size: .85rem; }
     .hidden { display: none; }
+
+    .menu-panel {
+      margin-top: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: .88rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .menu-panel h3 { margin: 0 0 6px; font-size: .95rem; }
+    footer.foot {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: .78rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <main>
-    <h1>Open<span>Glass</span></h1>
-    <p class="sub">Diagnóstico de rede em roteadores de borda</p>
+    <header class="top">
+      <div class="brand">
+        <img id="logo" class="hidden" alt="logo">
+        <div>
+          <h1 id="site-title">OpenGlass</h1>
+          <p class="sub" id="subtitle"></p>
+        </div>
+      </div>
+      <nav id="links"></nav>
+    </header>
 
     <div class="card">
       <div class="field">
@@ -117,6 +164,10 @@
       <div id="status"></div>
       <pre id="output" class="hidden"></pre>
     </div>
+
+    <div id="menus"></div>
+
+    <footer class="foot" id="foot"></footer>
   </main>
 
   <script>
@@ -127,6 +178,12 @@
     const $run = document.getElementById("run");
     const $status = document.getElementById("status");
     const $output = document.getElementById("output");
+    const $siteTitle = document.getElementById("site-title");
+    const $subtitle = document.getElementById("subtitle");
+    const $logo = document.getElementById("logo");
+    const $links = document.getElementById("links");
+    const $menus = document.getElementById("menus");
+    const $foot = document.getElementById("foot");
 
     const LABELS = { destination: "IP", ip: "IP", prefix: "Prefixo", hostname: "Host" };
     let commands = [];
@@ -141,6 +198,78 @@
     function setStatus(text, kind) {
       $status.textContent = text || "";
       $status.className = kind || "";
+    }
+
+    function applyTheme(theme) {
+      const colors = (theme && theme.colors) || {};
+      const root = document.documentElement.style;
+      if (colors.background) root.setProperty("--bg", colors.background);
+      if (colors.secondary) root.setProperty("--card", colors.secondary);
+      if (colors.text) root.setProperty("--text", colors.text);
+      if (colors.primary) root.setProperty("--accent", colors.primary);
+    }
+
+    function logoSrc(path) {
+      if (!path) return "";
+      const clean = path.replace(/^static\//, "");
+      return `/static/${clean}`;
+    }
+
+    function renderSite(site) {
+      document.title = site.site_title || "OpenGlass";
+      $siteTitle.textContent = site.site_title || "OpenGlass";
+      $subtitle.textContent = site.subtitle || site.site_description || "";
+
+      const logoPath = (site.logo && (site.logo.light || site.logo.dark)) || "";
+      if (logoPath && (site.title_mode || "").includes("logo")) {
+        $logo.src = logoSrc(logoPath);
+        $logo.onload = () => { $logo.classList.remove("hidden"); $siteTitle.classList.add("hidden"); };
+      }
+      if (site.logo && site.logo.favicon) {
+        const link = document.createElement("link");
+        link.rel = "icon";
+        link.href = logoSrc(site.logo.favicon);
+        document.head.appendChild(link);
+      }
+
+      applyTheme(site.theme);
+
+      const links = site.links || [];
+      const menus = site.menus || [];
+      const parts = [];
+      parts.push('<span class="sep">|</span>');
+      links.forEach((l, i) => {
+        parts.push(`<a href="${l.url}" target="_blank" rel="noopener">${l.title}</a>`);
+        if (i < links.length - 1) parts.push('<span class="sep">·</span>');
+      });
+      const menuButtons = menus
+        .map((m, i) => `<button type="button" data-menu="${i}">${m.title}</button>`)
+        .join('<span class="sep">·</span>');
+      $links.innerHTML = parts.join(" ") + (menus.length ? ` <span class="sep">|</span> ${menuButtons}` : "");
+
+      $menus.innerHTML = menus
+        .map(
+          (m, i) =>
+            `<div class="menu-panel hidden" id="menu-${i}"><h3>${m.title}</h3>${m.content}</div>`
+        )
+        .join("");
+      $links.querySelectorAll("button[data-menu]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const panel = document.getElementById(`menu-${btn.dataset.menu}`);
+          if (panel) panel.classList.toggle("hidden");
+        });
+      });
+
+      const asn = site.primary_asn ? ` · AS${site.primary_asn}` : "";
+      $foot.textContent = `${site.org_name || ""}${asn}`;
+    }
+
+    async function loadSite() {
+      try {
+        renderSite(await api("/api/site"));
+      } catch (err) {
+        console.warn("Falha ao carregar openglass.yaml:", err.message);
+      }
     }
 
     function currentParam() {
@@ -232,6 +361,7 @@
     $param.addEventListener("keydown", (e) => { if (e.key === "Enter") execute(); });
     $run.addEventListener("click", execute);
 
+    loadSite();
     loadDevices();
   </script>
 </body>

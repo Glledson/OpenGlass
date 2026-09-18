@@ -9,7 +9,7 @@ Uso (interativo):
     uv run openglass          # ou: uv run python main.py
 
 Uso (one-shot):
-    uv run python main.py --device edge-r1 --command ping --param ip=8.8.8.8
+    uv run python main.py --device edge-router --command ping --param ip=8.8.8.8
 
 Exit codes: 0 ok | 2 erro (inventário/conexão/comando) | 130 abortado
 """

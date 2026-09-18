@@ -19,7 +19,7 @@ INVENTORY = textwrap.dedent(
           - name: global
             default: true
             ipv4:
-              source_address: 45.5.40.255
+              source_address: 192.0.2.10
     """
 )
 
@@ -28,7 +28,16 @@ INVENTORY = textwrap.dedent(
 def client(tmp_path, monkeypatch):
     inventory = tmp_path / "devices.yaml"
     inventory.write_text(INVENTORY, encoding="utf-8")
+    config = tmp_path / "openglass.yaml"
+    config.write_text(
+        "org_name: Teste\n"
+        "primary_asn: 64500\n"
+        "site_title: Open Glass Teste\n"
+        'site_description: "{org_name} Network Open Glass"\n',
+        encoding="utf-8",
+    )
     monkeypatch.setattr(settings, "inventory_path", str(inventory))
+    monkeypatch.setattr(settings, "config_path", str(config))
     return TestClient(api.app)
 
 
@@ -36,6 +45,15 @@ def test_index_serves_frontend(client) -> None:
     response = client.get("/")
     assert response.status_code == 200
     assert "OpenGlass" in response.text
+
+
+def test_site_config_for_frontend(client) -> None:
+    response = client.get("/api/site")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["site_title"] == "Open Glass Teste"
+    assert body["primary_asn"] == 64500
+    assert body["site_description"] == "Teste Network Open Glass"
 
 
 def test_devices_hide_credentials(client) -> None:
@@ -97,7 +115,7 @@ def test_run_success_builds_command(client, monkeypatch) -> None:
         "/api/run", json={"device": "r1", "command": "ping", "params": {"ip": "8.8.8.8"}}
     )
     assert response.status_code == 200
-    assert captured["command"] == "ping 8.8.8.8 source 45.5.40.255"
+    assert captured["command"] == "ping 8.8.8.8 source 192.0.2.10"
     body = response.json()
-    assert body["command"] == "ping 8.8.8.8 source 45.5.40.255"
+    assert body["command"] == "ping 8.8.8.8 source 192.0.2.10"
     assert body["output"] == "!! resultado"

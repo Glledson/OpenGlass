@@ -101,14 +101,14 @@ routers:
       - name: global
         default: true
         ipv4:
-          source_address: 200.200.200.200
+          source_address: 192.0.2.10
           access_list:
             - network: 0.0.0.0/0
               action: permit
               ge: 8
               le: 32
         ipv6:
-          source_address: 2000:2000:1::1
+          source_address: 2001:db8::1
           access_list:
             - network: ::/0
               action: permit
@@ -121,7 +121,7 @@ routers:
         vrf = device.vrfs[0]
         assert vrf.name == "global"
         assert vrf.default is True
-        assert vrf.ipv4.source_address == "200.200.200.200"
+        assert vrf.ipv4.source_address == "192.0.2.10"
         assert vrf.ipv4.access_list[0].network == "0.0.0.0/0"
         assert vrf.ipv4.access_list[0].action == "permit"
         assert vrf.ipv6.access_list[0].le == 128

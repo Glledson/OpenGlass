@@ -4,13 +4,15 @@ Ferramenta web de diagnóstico de rede em roteadores de borda (Cisco IOS/IOS-XE 
 fase atual), permitindo rodar comandos como `ping`, `traceroute`, `show ip route`
 e `show ip bgp` com output bruto para validação.
 
-**Fase atual:** somente backend de conexão + execução via CLI. Sem API/frontend ainda.
+**Fase atual:** backend de conexão + execução via CLI + frontend web simples
+(identidade visual vinda do `openglass.yaml`).
 
 ## Estrutura (camadas)
 
 ```
 main.py                        # entrada do CLI: python main.py
 devices.yaml(.example)         # inventário (CREDENCIAIS — não versionado)
+openglass.yaml                 # configuração de site/UI (título, links, tema)
 .env(example)                  # configuração (timeouts, caminhos)
 nodes/cisco_ios.yaml           # whitelist + formatos de comando por NOS
 src/openglass/
@@ -18,9 +20,12 @@ src/openglass/
   connection.py                # camada de CONEXÃO: sessão SSH (Netmiko), erros tipados
   commands.py                  # camada de COMANDOS: whitelist (nodes/*.yaml) + execução
   nodes.py                     # carrega/valida perfis de NOS (templates de comando)
+  site.py                      # carrega openglass.yaml (site/UI para o frontend)
   security.py                  # camada de SEGURANÇA: sanitização anti-injeção
   cli.py                       # CLI interativo/one-shot
-tests/                         # security, commands, inventory, connection, nodes
+  api.py                       # API + serviço do front estático (FastAPI)
+  static/index.html            # frontend simples
+tests/                         # security, commands, inventory, connection, nodes, api, site
 ```
 
 A arquitetura mantém **conexão** × **comandos** × **parsing** separadas: a camada de
@@ -51,18 +56,28 @@ uv run python main.py --list-commands
 uv run python main.py
 
 # one-shot
-uv run python main.py --device edge-r1 --command show-ip-route
-uv run python main.py --device edge-r1 --command ping --param destination=8.8.8.8
-uv run python main.py --device r1 --command show-bgp-prefix --param prefix=8.8.8.0/24
-uv run python main.py --device r1 --command traceroute --param destination=1.1.1.1
+uv run python main.py --device edge-router --command show-ip-route
+uv run python main.py --device edge-router --command ping --param ip=8.8.8.8
+uv run python main.py --device edge-router --command show-bgp-prefix --param prefix=8.8.8.0/24
+uv run python main.py --device edge-router --command traceroute --param destination=1.1.1.1
 ```
 
 Exit codes: `0` ok | `2` erro (inventário/conexão/segurança) | `130` abortado (Ctrl+C).
 
+## Frontend web
+
+```bash
+uv run openglass-web            # sobe em listen_address:listen_port do openglass.yaml
+```
+
+Interface simples: escolher roteador, comando e digitar o IP/destino. Título,
+subtítulo, links, menus e tema vêm do `openglass.yaml` (aplicados no navegador
+via `GET /api/site`). As credenciais nunca vão para o navegador.
+
 ## Segurança
 
-- **Whitelist:** nenhum comando arbitrário é aceito — só os registrados em
-  `commands.COMMANDS` (não dá para mandar `show running-config` nem
+- **Whitelist:** nenhum comando arbitrário é aceito — só os definidos no perfil
+  do NOS em `nodes/<nos>.yaml` (não dá para mandar `show running-config` nem
   `enable`).
 - **Sanitização:** parâmetros (`destination`, `prefix`) são validados
   (IP/prefixo IPv4/IPv6 rigoroso, hostname simples) e caracteres de injeção

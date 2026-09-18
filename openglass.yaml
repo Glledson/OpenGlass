@@ -1,35 +1,25 @@
-# ============================================================================
-# OpenGlass — configuração principal
-#
-# Modelo baseado no hyperglass (https://hyperglass.dev/docs/parameters).
-# Copie/ajuste os valores abaixo. NÃO coloque credenciais de roteador aqui:
-# elas ficam em devices.yaml.
-#
-# Seções ainda não carregadas pela aplicação estão marcadas como FUTURO.
-# ============================================================================
-
 # ---------------------------------------------------------------------------
 # Geral
 # ---------------------------------------------------------------------------
 debug: false
 developer_mode: false
 
-org_name: Remontti Telecom
+org_name: LG Telecom
 primary_asn: 12345
-site_title: Looking Glass Remontti
-site_description: "{org_name} Network Looking Glass"
-site_keywords: [hyperglass, looking glass, routing, bgp]
+site_title: Open Glass LG
+site_description: "{org_name} Network Open Glass"
+site_keywords: [openglass, Open glass, routing, bgp]
 
 # Timeout (segundos) de uma requisição de consulta completa.
 request_timeout: 30
 
-# Endereço/porta em que o serviço web sobe.
+# Endereço/porta em que o serviço web sobe (ajuste conforme o ambiente).
 # 0.0.0.0 expõe na rede; 127.0.0.1 mantém só acesso local.
-listen_address: "172.18.18.79"
-listen_port: 80
+listen_address: "0.0.0.0"
+listen_port: 8000
 
 # ---------------------------------------------------------------------------
-# Cache de respostas — https://hyperglass.dev/docs/response-caching  (FUTURO)
+# Cache de respostas — (FUTURO)
 # ---------------------------------------------------------------------------
 cache:
   database: 0
@@ -39,7 +29,7 @@ cache:
   timeout: 120
 
 # ---------------------------------------------------------------------------
-# Mensagens exibidas ao usuário — https://hyperglass.dev/docs/messages/  (FUTURO)
+# Mensagens exibidas ao usuário — (FUTURO)
 # ---------------------------------------------------------------------------
 messages:
   acl_denied: "{target} is a member of {denied_network}, which is not allowed."
@@ -59,7 +49,7 @@ messages:
   vrf_not_found: VRF {vrf_name} is not defined.
 
 # ---------------------------------------------------------------------------
-# Logging — https://hyperglass.dev/docs/logging/  (/var/log/openglass.log)  (FUTURO)
+# Logging (FUTURO)
 # ---------------------------------------------------------------------------
 logging:
   directory: /var/log
@@ -67,8 +57,7 @@ logging:
   max_size: "50 MB"
 
 # ---------------------------------------------------------------------------
-# Consultas habilitadas — https://hyperglass.dev/docs/query-settings/
-# As chaves correspondem aos comandos de nodes/<nos>.yaml.
+# Consultas habilitadas 
 # ---------------------------------------------------------------------------
 queries:
   bgp_route:
@@ -103,7 +92,7 @@ queries:
     enable: true
 
 # ---------------------------------------------------------------------------
-# Saída estruturada (tabelas) — https://hyperglass.dev/docs/table-output/  (FUTURO)
+# Saída estruturada (FUTURO)
 # ---------------------------------------------------------------------------
 structured:
   rpki:
@@ -121,7 +110,7 @@ structured:
   #     - '65[1-4]00:\d+'
 
 # ---------------------------------------------------------------------------
-# UI / website — https://hyperglass.dev/docs/ui/configuration/  (FUTURO)
+# UI / website (FUTURO)
 # ---------------------------------------------------------------------------
 web:
   links:
@@ -145,28 +134,25 @@ web:
       url: https://rdap.registro.br/autnum/12345
       side: left
       order: 5
-    - title: Remontti
-      url: https://www.remontti.com.br
+    - title: LG
+      url: https://www.LG.com.br
       side: right
       order: 0
 
   menus:
     - title: Contato
-      content: "Please contact [noc@remontti.com.br](mailto:noc@remontti.com.br) to get support."
+      content: "Please contact [gledsom.bash@gmail.com](mailto:gledsom.bash@gmail.com) to get support."
       side: right
     - title: Termos e Condições
-      content: /etc/hyperglass/terms-and-conditions.md
+      content: terms-and-conditions.md
       side: right
 
-  # https://hyperglass.dev/docs/ui/logo
   logo:
-    dark: /etc/hyperglass/static/images/hyperglass-dark.svg
-    light: /etc/hyperglass/static/images/hyperglass-light.svg
-    favicon: /etc/hyperglass/static/images/hyperglass-icon.svg
+    dark: static/images/openglass-dark.svg
+    light: static/images/openglass-light.svg
+    favicon: static/images/openglass-icon.svg
     height: null
     width: 100%
-
-  # https://hyperglass.dev/docs/ui/text
   text:
     cache_icon: Cached from {time} UTC
     cache_prefix: "Results cached for "
@@ -184,13 +170,12 @@ web:
     rpki_unknown: No ROAs Exist
     rpki_unverified: Not Verified
     rpki_valid: Valid
-    subtitle: Network Looking Glass
-    title: hyperglass
+    subtitle: Network Open Glass
+    title: openglass
     title_mode: logo_subtitle
 
   # -------------------------------------------------------------------------
-  # Tema / governança visual — https://hyperglass.dev/docs/ui/theme
-  #                           e https://hyperglass.dev/docs/ui/example  (FUTURO)
+  # Tema / governança visual (FUTURO)
   # -------------------------------------------------------------------------
   theme:
     # default | dark | light
