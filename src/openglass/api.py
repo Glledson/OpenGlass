@@ -31,7 +31,7 @@ from openglass.site import SiteError, load_site_config
 
 STATIC_DIR = Path(__file__).parent / "static"
 
-app = FastAPI(title="OpenGlass", version="0.0.1")
+app = FastAPI(title="OpenGlass", version="0.0.2")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
