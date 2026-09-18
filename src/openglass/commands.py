@@ -164,7 +164,7 @@ def run(
     parsed: dict | None = None
     if spec.parser:
         try:
-            parsed = parse_output(spec.parser, raw)
+            parsed = parse_output(spec.parser, raw, params or {})
         except ParserError:
             parsed = None
 

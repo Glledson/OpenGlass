@@ -66,9 +66,15 @@ _STATUS_MARK = {"success": "✓", "partial": "⚠", "failed": "✗"}
 
 
 def _format_parsed(parsed: dict) -> str | None:
-    """Resumo didático do resultado estruturado (por enquanto, só ping)."""
-    if parsed.get("type") != "ping":
-        return None
+    """Resumo didático do resultado estruturado (por enquanto, ping e prefixo)."""
+    if parsed.get("type") == "ping":
+        return _format_ping_parsed(parsed)
+    if parsed.get("type") == "bgp_prefix":
+        return _format_bgp_prefix_parsed(parsed)
+    return None
+
+
+def _format_ping_parsed(parsed: dict) -> str:
     mark = _STATUS_MARK.get(parsed.get("status"), "•")
     parts = [
         f"{mark} ping {parsed.get('target') or '?'} → "
@@ -81,6 +87,33 @@ def _format_parsed(parsed: dict) -> str | None:
         parts.append(f"rtt {rtt['min']}/{rtt['avg']}/{rtt['max']} ms")
     if parsed.get("source"):
         parts.append(f"origem {parsed['source']}")
+    return " · ".join(parts)
+
+
+def _format_bgp_prefix_parsed(parsed: dict) -> str:
+    prefix = parsed.get("prefix") or "?"
+    if parsed.get("status") == "not_found":
+        return f"⚠ {prefix} · não está na tabela BGP"
+
+    paths = parsed.get("paths") or []
+    best = next((path for path in paths if path.get("best")), paths[0] if paths else None)
+    parts = [f"★ {prefix}", f"{parsed.get('available', len(paths))} path(s)"]
+    if best:
+        parts.append(
+            f"melhor #{best.get('index')}: {best.get('as_path_text') or '?'} "
+            f"via {best.get('next_hop')}"
+        )
+        attrs = []
+        if best.get("origin"):
+            attrs.append(best["origin"])
+        if best.get("localpref") is not None:
+            attrs.append(f"localpref {best['localpref']}")
+        if attrs:
+            parts.append(" · ".join(attrs))
+    if parsed.get("advertised") is False:
+        parts.append("não anunciado")
+    elif parsed.get("advertised") is True and parsed.get("update_groups"):
+        parts.append("anunciado a ug " + ",".join(parsed["update_groups"]))
     return " · ".join(parts)
 
 

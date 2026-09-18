@@ -8,8 +8,8 @@ bruto como fallback.
 **Versão:** 0.0.2
 
 **Fase atual:** backend de conexão + execução via CLI + frontend web (FastAPI) +
-parsing do output (começando pelo `ping`), com a identidade visual vinda do
-`openglass.yaml` (título, logo, links, menus e tema).
+parsing do output (`ping` e detalhe de prefixo BGP), com a identidade visual vinda
+do `openglass.yaml` (título, logo, links, menus e tema).
 
 ## Estrutura (camadas)
 
@@ -27,6 +27,7 @@ src/openglass/
   parsers/__init__.py          # registro de parsers (PARSERS / PARSER_NAMES)
   parsers/base.py              # ParserError
   parsers/ping.py              # parser do output do ping (resumo estruturado)
+  parsers/bgp_prefix.py        # parser do detalhe de prefixo BGP (paths/atributos)
   site.py                      # carrega openglass.yaml (site/UI para o frontend)
   security.py                  # camada de SEGURANÇA: sanitização anti-injeção
   cli.py                       # CLI interativo/one-shot
@@ -81,11 +82,16 @@ uv run openglass-web            # sobe em listen_address:listen_port do openglas
 ```
 
 No navegador: escolher o roteador, o comando e digitar o IP/destino. Quando o
-comando tem parser, o resultado aparece em um **cartão didático** (no `ping`:
-badge Sucesso/Parcial/Falha, chips por resposta, enviados/recebidos/perda e barras
-de latência); a **saída bruta** fica recolhida em “Ver saída bruta”, com botão
-**Copiar**. Comandos sem parser exibem apenas a saída bruta. As credenciais nunca
-vão para o navegador.
+comando tem parser, o resultado aparece em um **cartão didático**:
+
+- `ping`: badge Sucesso/Parcial/Falha, chips por resposta, enviados/recebidos/perda
+  e barras de latência;
+- `show-bgp-prefix`: destaque do melhor caminho, AS path, next hop, origem,
+  atributos (localpref/metric/weight), agregações e flags.
+
+A **saída bruta** fica recolhida em “Ver saída bruta”, com botão **Copiar**.
+Comandos sem parser exibem apenas a saída bruta. As credenciais nunca vão para o
+navegador.
 
 A identidade visual é lida do `openglass.yaml` (via `GET /api/site`):
 
@@ -150,16 +156,19 @@ Exemplo de `parsed` para o `ping`:
 
 | chave              | comando                              | parser |
 | ------------------ | ------------------------------------ | ------ |
-| `show-ip-route`    | `show ip route`                      | —      |
-| `show-bgp-summary` | `show ip bgp summary`                | —      |
-| `show-bgp-prefix`  | `show ip bgp <prefixo>`              | —      |
-| `ping`             | `ping <ip> source <source_address>`  | `ping` |
-| `traceroute`       | `traceroute <destino>`               | —      |
+| `show-ip-route`    | `show ip route`                      | —            |
+| `show-bgp-summary` | `show ip bgp summary`                | —            |
+| `show-bgp-prefix`  | `show ip bgp <prefixo>`              | `bgp_prefix` |
+| `ping`             | `ping <ip> source <source_address>`  | `ping`       |
+| `traceroute`       | `traceroute <destino>`               | —            |
 
 `<source_address>` é preenchido automaticamente com o `source_address` do VRF do
 device no `devices.yaml` (IPv4 ou IPv6 conforme o destino) — nunca vem do usuário.
-A coluna `parser` referencia um parser registrado em `openglass/parsers` (hoje só
-`ping`). Os templates/whitelist ficam em `nodes/<nos>.yaml`.
+A coluna `parser` referencia um parser registrado em `openglass/parsers` (hoje:
+`ping` e `bgp_prefix`). Os templates/whitelist ficam em `nodes/<nos>.yaml`.
+
+> Obs.: o detalhe de prefixo cobre IPv4 (`show ip bgp <prefixo>`). IPv6 exige
+> `show bgp ipv6 unicast <prefixo>` (a ser adicionado como comando próprio).
 
 ## Testes
 
@@ -167,7 +176,8 @@ A coluna `parser` referencia um parser registrado em `openglass/parsers` (hoje s
 uv run pytest
 ```
 
-**102 testes.** Não conecta em dispositivo real: usa Netmiko mockado (camada de
-conexão) e saídas de exemplo para os parsers — `tests/test_parsers.py` cobre ping
-com sucesso, parcial, 100% de perda, unreachable, IPv6, ausência de `source` e
-saída inválida. O teste real em roteador se faz pelo CLI do item "Uso".
+**110 testes.** Não conecta em dispositivo real: usa Netmiko mockado (camada de
+conexão) e saídas reais de exemplo para os parsers — `tests/test_parsers.py`
+(`ping`) e `tests/test_bgp_prefix.py` (2 paths, agregado, origem `Local`,
+update-groups e `% Network not in table`). O teste real em roteador se faz pelo
+CLI do item "Uso".

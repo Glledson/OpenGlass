@@ -24,6 +24,7 @@ commands:
     description: "Detalhe de um prefixo BGP (show ip bgp <prefixo>)"
     template: "show ip bgp $prefix"
     timeout: 120
+    parser: bgp_prefix
     params:
       prefix:
         type: prefix

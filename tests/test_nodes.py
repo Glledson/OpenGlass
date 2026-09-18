@@ -25,6 +25,7 @@ class TestLoadProfile:
         assert ping.timeout == 60
         assert ping.parser == "ping"
         assert profile.commands["show-bgp-prefix"].params["prefix"].type == "prefix"
+        assert profile.commands["show-bgp-prefix"].parser == "bgp_prefix"
 
     def test_missing_profile_raises(self) -> None:
         with pytest.raises(NodeError):

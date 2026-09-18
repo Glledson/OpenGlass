@@ -63,8 +63,9 @@ def _status_for(percent: int) -> str:
     return "failed"
 
 
-def parse_ping(output: str) -> dict:
+def parse_ping(output: str, context: dict | None = None) -> dict:
     """Estrutura o output de um ping simples (não-estendido)."""
+    del context  # o ping não usa parâmetros de contexto
     text = output.replace("\r", "")
     lines = text.splitlines()
 
