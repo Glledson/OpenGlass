@@ -148,9 +148,9 @@ web:
       side: right
 
   logo:
-    dark: static/images/openglass-dark.svg
-    light: static/images/openglass-light.svg
-    favicon: static/images/openglass-icon.svg
+    dark: static/images/openglass.png
+    light: static/images/openglass.png
+    favicon: static/images/openglass-icon.png
     height: null
     width: 100%
   text:
@@ -170,7 +170,7 @@ web:
     rpki_unknown: No ROAs Exist
     rpki_unverified: Not Verified
     rpki_valid: Valid
-    subtitle: Network Open Glass
+    subtitle: Provedor de Internet LG Telecom
     title: openglass
     title_mode: logo_subtitle
 

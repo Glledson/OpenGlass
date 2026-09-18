@@ -8,41 +8,201 @@
     :root {
       --bg: #0f172a;
       --card: #1e293b;
-      --border: #334155;
       --text: #e2e8f0;
-      --muted: #94a3b8;
       --accent: #38bdf8;
+      --muted: color-mix(in srgb, var(--text) 62%, transparent);
+      --border: color-mix(in srgb, var(--text) 16%, transparent);
+      --field: color-mix(in srgb, var(--bg) 55%, var(--card));
       --ok: #22c55e;
       --err: #f87171;
+      --radius: 14px;
     }
     * { box-sizing: border-box; }
+    html, body { margin: 0; }
     body {
-      margin: 0;
       min-height: 100vh;
-      background: var(--bg);
+      background:
+        radial-gradient(1100px 520px at 50% -12%,
+          color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+        var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
       display: flex;
       justify-content: center;
-      padding: 32px 16px;
+      padding: 44px 18px 64px;
     }
-    main { width: 100%; max-width: 860px; }
+    main { width: 100%; max-width: 880px; }
 
-    header.top {
+    /* ---------- Hero ---------- */
+    header.hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    #logo {
+      max-height: 180px;
+      max-width: 510px;
+      width: auto;
+      height: auto;
+      filter: drop-shadow(0 12px 26px rgba(0, 0, 0, .45));
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 750;
+      letter-spacing: -0.025em;
+      margin: 0;
+    }
+    h1 span { color: var(--accent); }
+    .sub { color: var(--muted); margin: 0; font-size: .95rem; }
+
+    /* ---------- Card ---------- */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 20px 45px -22px rgba(0, 0, 0, .75);
+    }
+    .form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .field { display: flex; flex-direction: column; min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    label {
+      font-size: .72rem;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+    select, input {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--field);
+      color: var(--text);
+      font-size: .95rem;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+    input:disabled { opacity: .45; cursor: not-allowed; }
+
+    button#run {
+      grid-column: 1 / -1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 13px 16px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #05263a;
+      font-size: 1rem;
+      font-weight: 750;
+      cursor: pointer;
+      transition: filter .15s, transform .05s;
+    }
+    button#run:hover:not(:disabled) { filter: brightness(1.06); }
+    button#run:active:not(:disabled) { transform: translateY(1px); }
+    button#run:disabled { opacity: .55; cursor: not-allowed; }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(5, 38, 58, .35);
+      border-top-color: #05263a;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---------- Status ---------- */
+    #status {
+      min-height: 20px;
+      margin-top: 16px;
+      font-size: .87rem;
+      color: var(--muted);
+    }
+    #status.err { color: var(--err); }
+    #status.ok { color: var(--ok); }
+    #status code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--accent);
+    }
+
+    /* ---------- Resultado (terminal) ---------- */
+    .result {
+      margin-top: 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: color-mix(in srgb, var(--bg) 82%, black);
+    }
+    .result-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: color-mix(in srgb, var(--text) 6%, transparent);
+      border-bottom: 1px solid var(--border);
+    }
+    .dots { display: inline-flex; gap: 6px; }
+    .dots i {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+    .result-title {
+      font-size: .74rem;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-right: auto;
+    }
+    #copy {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: .76rem;
+      padding: 5px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    #copy:hover { color: var(--accent); border-color: var(--accent); }
+    pre#output {
+      margin: 0;
+      padding: 16px 18px;
+      max-height: 480px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .82rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ---------- Rodapé / links ---------- */
+    nav#links {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
+      justify-content: center;
+      gap: 8px 14px;
+      margin-top: 30px;
     }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand img { max-height: 46px; max-width: 220px; }
-    h1 { font-size: 1.8rem; margin: 0; letter-spacing: -0.02em; }
-    h1 span { color: var(--accent); }
-    .sub { color: var(--muted); margin: 2px 0 0; font-size: .88rem; }
-
-    nav#links { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
     nav#links a, nav#links button {
       color: var(--muted);
       background: none;
@@ -52,119 +212,89 @@
       font-size: .82rem;
       text-decoration: none;
       cursor: pointer;
+      transition: color .15s;
     }
-    nav#links a:hover, nav#links button:hover { color: var(--accent); text-decoration: underline; }
+    nav#links a:hover, nav#links button:hover { color: var(--accent); }
     nav#links .sep { color: var(--border); }
 
-    .card {
+    #menus { max-width: 620px; margin: 14px auto 0; }
+    .menu-panel {
+      margin-top: 12px;
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: .88rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      color: var(--text);
     }
-    .field { margin-bottom: 16px; }
-    label {
-      display: block;
+    .menu-panel h3 {
+      margin: 0 0 6px;
       font-size: .8rem;
       text-transform: uppercase;
       letter-spacing: .06em;
       color: var(--muted);
-      margin-bottom: 6px;
     }
-    select, input {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #0b1220;
-      color: var(--text);
-      font-size: 1rem;
-    }
-    select:focus, input:focus { outline: 2px solid var(--accent); border-color: transparent; }
-    input:disabled { opacity: .45; cursor: not-allowed; }
-    button#run {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: var(--accent);
-      color: #04263a;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button#run:disabled { opacity: .5; cursor: not-allowed; }
-    #status { min-height: 20px; margin-top: 14px; font-size: .85rem; color: var(--muted); }
-    #status.err { color: var(--err); }
-    #status.ok { color: var(--ok); }
-    pre#output {
-      margin-top: 14px;
-      background: #0b1220;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
-      overflow: auto;
-      max-height: 460px;
-      font-size: .82rem;
-      line-height: 1.45;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .hidden { display: none; }
-
-    .menu-panel {
-      margin-top: 16px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
-      font-size: .88rem;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    }
-    .menu-panel h3 { margin: 0 0 6px; font-size: .95rem; }
     footer.foot {
-      margin-top: 20px;
+      margin-top: 26px;
+      text-align: center;
       color: var(--muted);
       font-size: .78rem;
-      text-align: center;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 620px) {
+      .form { grid-template-columns: 1fr; }
+      h1 { font-size: 1.7rem; }
+      #logo { max-height: 130px; }
     }
   </style>
 </head>
 <body>
   <main>
-    <header class="top">
-      <div class="brand">
-        <img id="logo" class="hidden" alt="logo">
-        <div>
-          <h1 id="site-title">OpenGlass</h1>
-          <p class="sub" id="subtitle"></p>
-        </div>
-      </div>
-      <nav id="links"></nav>
+    <header class="hero">
+      <img id="logo" class="hidden" alt="logo">
+      <h1 id="site-title">OpenGlass</h1>
+      <p class="sub" id="subtitle"></p>
     </header>
 
-    <div class="card">
-      <div class="field">
-        <label for="device">Roteador</label>
-        <select id="device"></select>
-      </div>
+    <section class="card">
+      <form class="form" id="query-form">
+        <div class="field">
+          <label for="device">Roteador</label>
+          <select id="device"></select>
+        </div>
 
-      <div class="field">
-        <label for="command">Comando</label>
-        <select id="command"></select>
-      </div>
+        <div class="field">
+          <label for="command">Comando</label>
+          <select id="command"></select>
+        </div>
 
-      <div class="field" id="param-field">
-        <label for="param" id="param-label">IP</label>
-        <input id="param" type="text" placeholder="8.8.8.8" autocomplete="off">
-      </div>
+        <div class="field full" id="param-field">
+          <label for="param" id="param-label">IP</label>
+          <input id="param" type="text" placeholder="8.8.8.8" autocomplete="off">
+        </div>
 
-      <button id="run">Executar</button>
+        <button id="run" type="submit">
+          <span class="spinner hidden" id="spinner"></span>
+          <span id="run-label">Executar</span>
+        </button>
+      </form>
       <div id="status"></div>
-      <pre id="output" class="hidden"></pre>
-    </div>
+    </section>
 
+    <section class="result hidden" id="result">
+      <div class="result-head">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="result-title">Resultado</span>
+        <button id="copy" type="button">Copiar</button>
+      </div>
+      <pre id="output"></pre>
+    </section>
+
+    <nav id="links"></nav>
     <div id="menus"></div>
 
     <footer class="foot" id="foot"></footer>
@@ -175,9 +305,14 @@
     const $command = document.getElementById("command");
     const $paramLabel = document.getElementById("param-label");
     const $param = document.getElementById("param");
+    const $form = document.getElementById("query-form");
     const $run = document.getElementById("run");
+    const $runLabel = document.getElementById("run-label");
+    const $spinner = document.getElementById("spinner");
     const $status = document.getElementById("status");
+    const $result = document.getElementById("result");
     const $output = document.getElementById("output");
+    const $copy = document.getElementById("copy");
     const $siteTitle = document.getElementById("site-title");
     const $subtitle = document.getElementById("subtitle");
     const $logo = document.getElementById("logo");
@@ -196,8 +331,14 @@
     }
 
     function setStatus(text, kind) {
-      $status.textContent = text || "";
+      $status.innerHTML = text || "";
       $status.className = kind || "";
+    }
+
+    function setLoading(active) {
+      $run.disabled = active;
+      $spinner.classList.toggle("hidden", !active);
+      $runLabel.textContent = active ? "Executando..." : "Executar";
     }
 
     function applyTheme(theme) {
@@ -211,8 +352,7 @@
 
     function logoSrc(path) {
       if (!path) return "";
-      const clean = path.replace(/^static\//, "");
-      return `/static/${clean}`;
+      return `/static/${path.replace(/^static\//, "")}`;
     }
 
     function renderSite(site) {
@@ -222,8 +362,12 @@
 
       const logoPath = (site.logo && (site.logo.light || site.logo.dark)) || "";
       if (logoPath && (site.title_mode || "").includes("logo")) {
+        $logo.alt = site.site_title || "logo";
+        $logo.onload = () => {
+          $logo.classList.remove("hidden");
+          $siteTitle.classList.add("hidden");
+        };
         $logo.src = logoSrc(logoPath);
-        $logo.onload = () => { $logo.classList.remove("hidden"); $siteTitle.classList.add("hidden"); };
       }
       if (site.logo && site.logo.favicon) {
         const link = document.createElement("link");
@@ -236,8 +380,7 @@
 
       const links = site.links || [];
       const menus = site.menus || [];
-      const parts = [];
-      parts.push('<span class="sep">|</span>');
+      const parts = ['<span class="sep">|</span>'];
       links.forEach((l, i) => {
         parts.push(`<a href="${l.url}" target="_blank" rel="noopener">${l.title}</a>`);
         if (i < links.length - 1) parts.push('<span class="sep">·</span>');
@@ -323,7 +466,8 @@
       }
     }
 
-    async function execute() {
+    async function execute(event) {
+      if (event) event.preventDefault();
       const param = currentParam();
       const params = {};
       if (param) {
@@ -336,8 +480,8 @@
         params[param.name] = value;
       }
 
-      $run.disabled = true;
-      $output.classList.add("hidden");
+      $result.classList.add("hidden");
+      setLoading(true);
       setStatus("Executando no roteador... (pode levar alguns segundos)");
 
       try {
@@ -346,20 +490,29 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ device: $device.value, command: $command.value, params }),
         });
-        setStatus(`OK · $ ${result.command}`, "ok");
+        setStatus(`OK · <code>$ ${result.command}</code>`, "ok");
         $output.textContent = result.output;
-        $output.classList.remove("hidden");
+        $result.classList.remove("hidden");
       } catch (err) {
         setStatus(err.message, "err");
       } finally {
-        $run.disabled = false;
+        setLoading(false);
       }
     }
 
+    $copy.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText($output.textContent || "");
+        $copy.textContent = "Copiado!";
+        setTimeout(() => { $copy.textContent = "Copiar"; }, 1500);
+      } catch (err) {
+        setStatus("Não foi possível copiar.", "err");
+      }
+    });
+
     $device.addEventListener("change", loadCommands);
     $command.addEventListener("change", renderParamField);
-    $param.addEventListener("keydown", (e) => { if (e.key === "Enter") execute(); });
-    $run.addEventListener("click", execute);
+    $form.addEventListener("submit", execute);
 
     loadSite();
     loadDevices();

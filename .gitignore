@@ -16,3 +16,6 @@ devices.yaml
 # Cache de teste
 .pytest_cache/
 .ruff_cache/
+
+# Metadados do Windows (WSL/Downloads)
+*:Zone.Identifier

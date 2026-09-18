@@ -4,15 +4,16 @@ Ferramenta web de diagnóstico de rede em roteadores de borda (Cisco IOS/IOS-XE 
 fase atual), permitindo rodar comandos como `ping`, `traceroute`, `show ip route`
 e `show ip bgp` com output bruto para validação.
 
-**Fase atual:** backend de conexão + execução via CLI + frontend web simples
-(identidade visual vinda do `openglass.yaml`).
+**Fase atual:** backend de conexão + execução via CLI + frontend web (FastAPI),
+com a identidade visual vinda do `openglass.yaml` (título, logo, links, menus e
+tema).
 
 ## Estrutura (camadas)
 
 ```
 main.py                        # entrada do CLI: python main.py
 devices.yaml(.example)         # inventário (CREDENCIAIS — não versionado)
-openglass.yaml                 # configuração de site/UI (título, links, tema)
+openglass.yaml                 # configuração de site/UI (título, logo, links, tema)
 .env(example)                  # configuração (timeouts, caminhos)
 nodes/cisco_ios.yaml           # whitelist + formatos de comando por NOS
 src/openglass/
@@ -24,7 +25,8 @@ src/openglass/
   security.py                  # camada de SEGURANÇA: sanitização anti-injeção
   cli.py                       # CLI interativo/one-shot
   api.py                       # API + serviço do front estático (FastAPI)
-  static/index.html            # frontend simples
+  static/index.html            # frontend
+  static/images/               # logo/favicon referenciados pelo openglass.yaml
 tests/                         # security, commands, inventory, connection, nodes, api, site
 ```
 
@@ -34,7 +36,7 @@ parsing entra depois plugando em `nodes.NodeCommand.parser`, sem reescrever as o
 ## Setup
 
 ```bash
-uv sync                      # instala deps (netmiko, pyyaml, pydantic-settings)
+uv sync                      # instala deps (netmiko, pyyaml, pydantic-settings, fastapi, uvicorn)
 cp devices.yaml.example devices.yaml   # preencha com seus roteadores
 cp .env.example .env                   # ajuste timeouts se quiser
 ```
@@ -70,9 +72,27 @@ Exit codes: `0` ok | `2` erro (inventário/conexão/segurança) | `130` abortado
 uv run openglass-web            # sobe em listen_address:listen_port do openglass.yaml
 ```
 
-Interface simples: escolher roteador, comando e digitar o IP/destino. Título,
-subtítulo, links, menus e tema vêm do `openglass.yaml` (aplicados no navegador
-via `GET /api/site`). As credenciais nunca vão para o navegador.
+No navegador: escolher o roteador, o comando e digitar o IP/destino. O resultado
+sai em um painel estilo terminal, com botão **Copiar**. As credenciais nunca vão
+para o navegador.
+
+A identidade visual é lida do `openglass.yaml` (via `GET /api/site`):
+
+- `site_title`, `site_description`, `org_name`, `primary_asn`
+- `web.logo` (`dark`/`light`/`favicon`) — coloque os arquivos em
+  `src/openglass/static/images/` e referencie como `static/images/<arquivo>`
+- `web.links` e `web.menus` — exibidos no rodapé
+- `web.theme.colors` — `primary`, `secondary`, `text`, `background`
+
+## API
+
+| método | rota                            | descrição                                  |
+| ------ | ------------------------------- | ------------------------------------------ |
+| GET    | `/`                             | frontend                                   |
+| GET    | `/api/site`                     | configuração de site/UI do `openglass.yaml`|
+| GET    | `/api/devices`                  | devices do inventário (sem credenciais)    |
+| GET    | `/api/devices/{nome}/commands`  | comandos permitidos do NOS do device       |
+| POST   | `/api/run`                      | executa um comando (`{device, command, params}`) |
 
 ## Segurança
 
@@ -89,13 +109,17 @@ via `GET /api/site`). As credenciais nunca vão para o navegador.
 
 ## Comandos disponíveis
 
-| chave              | comando                    |
-| ------------------ | -------------------------- |
-| `show-ip-route`    | `show ip route`            |
-| `show-bgp-summary` | `show ip bgp summary`      |
-| `show-bgp-prefix`  | `show ip bgp <prefixo>`    |
-| `ping`             | `ping <destino>`           |
-| `traceroute`       | `traceroute <destino>`     |
+| chave              | comando                              |
+| ------------------ | ------------------------------------ |
+| `show-ip-route`    | `show ip route`                      |
+| `show-bgp-summary` | `show ip bgp summary`                |
+| `show-bgp-prefix`  | `show ip bgp <prefixo>`              |
+| `ping`             | `ping <ip> source <source_address>`  |
+| `traceroute`       | `traceroute <destino>`               |
+
+`<source_address>` é preenchido automaticamente com o `source_address` do VRF do
+device no `devices.yaml` (IPv4 ou IPv6 conforme o destino) — nunca vem do usuário.
+Os templates/whitelist ficam em `nodes/<nos>.yaml`.
 
 ## Testes
 
