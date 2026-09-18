@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenGlass</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --ok: #22c55e;
+      --err: #f87171;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+    main { width: 100%; max-width: 760px; }
+    h1 {
+      font-size: 2rem;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    h1 span { color: var(--accent); }
+    .sub { color: var(--muted); margin: 4px 0 28px; font-size: .9rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    select, input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    select:focus, input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    input:disabled { opacity: .45; cursor: not-allowed; }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #04263a;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    #status { min-height: 20px; margin-top: 14px; font-size: .85rem; color: var(--muted); }
+    #status.err { color: var(--err); }
+    #status.ok { color: var(--ok); }
+    pre {
+      margin-top: 14px;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      overflow: auto;
+      max-height: 460px;
+      font-size: .82rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .cmd { color: var(--accent); font-family: ui-monospace, monospace; font-size: .85rem; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Open<span>Glass</span></h1>
+    <p class="sub">Diagnóstico de rede em roteadores de borda</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="device">Roteador</label>
+        <select id="device"></select>
+      </div>
+
+      <div class="field">
+        <label for="command">Comando</label>
+        <select id="command"></select>
+      </div>
+
+      <div class="field" id="param-field">
+        <label for="param" id="param-label">IP</label>
+        <input id="param" type="text" placeholder="8.8.8.8" autocomplete="off">
+      </div>
+
+      <button id="run">Executar</button>
+      <div id="status"></div>
+      <pre id="output" class="hidden"></pre>
+    </div>
+  </main>
+
+  <script>
+    const $device = document.getElementById("device");
+    const $command = document.getElementById("command");
+    const $paramLabel = document.getElementById("param-label");
+    const $param = document.getElementById("param");
+    const $run = document.getElementById("run");
+    const $status = document.getElementById("status");
+    const $output = document.getElementById("output");
+
+    const LABELS = { destination: "IP", ip: "IP", prefix: "Prefixo", hostname: "Host" };
+    let commands = [];
+
+    async function api(url, options) {
+      const res = await fetch(url, options);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || `Erro ${res.status}`);
+      return data;
+    }
+
+    function setStatus(text, kind) {
+      $status.textContent = text || "";
+      $status.className = kind || "";
+    }
+
+    function currentParam() {
+      const cmd = commands.find((c) => c.name === $command.value);
+      return cmd && cmd.params.length ? cmd.params[0] : null;
+    }
+
+    function renderParamField() {
+      const param = currentParam();
+      if (!param) {
+        $paramLabel.textContent = "IP";
+        $param.placeholder = "este comando não usa parâmetro";
+        $param.value = "";
+        $param.disabled = true;
+        return;
+      }
+      $paramLabel.textContent = LABELS[param.type] || param.name;
+      $param.placeholder = param.type === "prefix" ? "8.8.8.0/24" : "8.8.8.8";
+      $param.disabled = false;
+    }
+
+    async function loadCommands() {
+      const name = $device.value;
+      if (!name) return;
+      setStatus("Carregando comandos...");
+      try {
+        commands = await api(`/api/devices/${encodeURIComponent(name)}/commands`);
+        $command.innerHTML = commands
+          .map((c) => `<option value="${c.name}">${c.description}</option>`)
+          .join("");
+        renderParamField();
+        setStatus("");
+      } catch (err) {
+        commands = [];
+        $command.innerHTML = "";
+        setStatus(err.message, "err");
+      }
+    }
+
+    async function loadDevices() {
+      setStatus("Carregando roteadores...");
+      try {
+        const devices = await api("/api/devices");
+        $device.innerHTML = devices
+          .map((d) => `<option value="${d.name}">${d.name} (${d.address})</option>`)
+          .join("");
+        setStatus("");
+        await loadCommands();
+      } catch (err) {
+        setStatus(err.message, "err");
+      }
+    }
+
+    async function execute() {
+      const param = currentParam();
+      const params = {};
+      if (param) {
+        const value = $param.value.trim();
+        if (!value) {
+          setStatus(`Informe o ${$paramLabel.textContent}.`, "err");
+          $param.focus();
+          return;
+        }
+        params[param.name] = value;
+      }
+
+      $run.disabled = true;
+      $output.classList.add("hidden");
+      setStatus("Executando no roteador... (pode levar alguns segundos)");
+
+      try {
+        const result = await api("/api/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ device: $device.value, command: $command.value, params }),
+        });
+        setStatus(`OK · $ ${result.command}`, "ok");
+        $output.textContent = result.output;
+        $output.classList.remove("hidden");
+      } catch (err) {
+        setStatus(err.message, "err");
+      } finally {
+        $run.disabled = false;
+      }
+    }
+
+    $device.addEventListener("change", loadCommands);
+    $command.addEventListener("change", renderParamField);
+    $param.addEventListener("keydown", (e) => { if (e.key === "Enter") execute(); });
+    $run.addEventListener("click", execute);
+
+    loadDevices();
+  </script>
+</body>
+</html>

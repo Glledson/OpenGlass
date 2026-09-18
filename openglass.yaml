@@ -1,0 +1,205 @@
+# ============================================================================
+# OpenGlass — configuração principal
+#
+# Modelo baseado no hyperglass (https://hyperglass.dev/docs/parameters).
+# Copie/ajuste os valores abaixo. NÃO coloque credenciais de roteador aqui:
+# elas ficam em devices.yaml.
+#
+# Seções ainda não carregadas pela aplicação estão marcadas como FUTURO.
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# Geral
+# ---------------------------------------------------------------------------
+debug: false
+developer_mode: false
+
+org_name: Remontti Telecom
+primary_asn: 12345
+site_title: Looking Glass Remontti
+site_description: "{org_name} Network Looking Glass"
+site_keywords: [hyperglass, looking glass, routing, bgp]
+
+# Timeout (segundos) de uma requisição de consulta completa.
+request_timeout: 30
+
+# Endereço/porta em que o serviço web sobe.
+# 0.0.0.0 expõe na rede; 127.0.0.1 mantém só acesso local.
+listen_address: "172.18.18.79"
+listen_port: 80
+
+# ---------------------------------------------------------------------------
+# Cache de respostas — https://hyperglass.dev/docs/response-caching  (FUTURO)
+# ---------------------------------------------------------------------------
+cache:
+  database: 0
+  host: localhost
+  port: 6379
+  show_text: true
+  timeout: 120
+
+# ---------------------------------------------------------------------------
+# Mensagens exibidas ao usuário — https://hyperglass.dev/docs/messages/  (FUTURO)
+# ---------------------------------------------------------------------------
+messages:
+  acl_denied: "{target} is a member of {denied_network}, which is not allowed."
+  acl_not_allowed: "{target} is not allowed."
+  authentication_error: Authentication error occurred.
+  connection_error: "Error connecting to {device_name}: {error}"
+  feature_not_enabled: "{feature} is not enabled for {device_name}."
+  general: Something went wrong.
+  invalid_field: "{input} is an invalid {field}."
+  invalid_input: "{target} is not a valid {query_type} target."
+  no_input: "{field} must be specified."
+  no_output: The query completed, but no matching results were found.
+  no_response: No response.
+  parsing_error: An error occurred while parsing the query output.
+  request_timeout: Request timed out.
+  vrf_not_associated: VRF {vrf_name} is not associated with {device_name}.
+  vrf_not_found: VRF {vrf_name} is not defined.
+
+# ---------------------------------------------------------------------------
+# Logging — https://hyperglass.dev/docs/logging/  (/var/log/openglass.log)  (FUTURO)
+# ---------------------------------------------------------------------------
+logging:
+  directory: /var/log
+  format: text
+  max_size: "50 MB"
+
+# ---------------------------------------------------------------------------
+# Consultas habilitadas — https://hyperglass.dev/docs/query-settings/
+# As chaves correspondem aos comandos de nodes/<nos>.yaml.
+# ---------------------------------------------------------------------------
+queries:
+  bgp_route:
+    display_name: BGP Route
+    enable: true
+
+  bgp_community:
+    # Huawei no modo structured não funciona
+    display_name: BGP Community
+    enable: false
+    mode: select
+    communities:
+      - community: "12345:666"
+        display_name: Blackhole
+        description: "12345:666"
+
+  bgp_aspath:
+    # Huawei no modo structured não funciona
+    display_name: BGP AS Path
+    enable: false
+    pattern:
+      asdot: '^(\^|^\_)((\d+\.\d+)\_|(\d+\.\d+)\$|(\d+\.\d+)\(\_\.\+\_\))+$'
+      asplain: '^(\^|^\_)(\d+\_|\d+\$|\d+\(\_\.\+\_\))+$'
+      mode: asplain
+
+  ping:
+    display_name: Ping
+    enable: true
+
+  traceroute:
+    display_name: Traceroute
+    enable: true
+
+# ---------------------------------------------------------------------------
+# Saída estruturada (tabelas) — https://hyperglass.dev/docs/table-output/  (FUTURO)
+# ---------------------------------------------------------------------------
+structured:
+  rpki:
+    mode: external
+
+  # communities:
+  #   # Para não exibir nenhuma community
+  #   mode: deny
+
+  # communities:
+  #   # Para permitir apenas...
+  #   mode: permit
+  #   items:
+  #     - '65000:\d+'
+  #     - '65[1-4]00:\d+'
+
+# ---------------------------------------------------------------------------
+# UI / website — https://hyperglass.dev/docs/ui/configuration/  (FUTURO)
+# ---------------------------------------------------------------------------
+web:
+  links:
+    - title: PeeringDB
+      url: https://www.peeringdb.com/asn/12345
+      side: left
+      order: 1
+    - title: Qrator
+      url: https://radar.qrator.net/AS12345
+      side: left
+      order: 2
+    - title: RADb
+      url: "https://www.radb.net/query?advanced_query=&keywords=AS12345"
+      side: left
+      order: 3
+    - title: IRR Explorer
+      url: https://irrexplorer.nlnog.net/asn/AS12345
+      side: left
+      order: 4
+    - title: RDAP
+      url: https://rdap.registro.br/autnum/12345
+      side: left
+      order: 5
+    - title: Remontti
+      url: https://www.remontti.com.br
+      side: right
+      order: 0
+
+  menus:
+    - title: Contato
+      content: "Please contact [noc@remontti.com.br](mailto:noc@remontti.com.br) to get support."
+      side: right
+    - title: Termos e Condições
+      content: /etc/hyperglass/terms-and-conditions.md
+      side: right
+
+  # https://hyperglass.dev/docs/ui/logo
+  logo:
+    dark: /etc/hyperglass/static/images/hyperglass-dark.svg
+    light: /etc/hyperglass/static/images/hyperglass-light.svg
+    favicon: /etc/hyperglass/static/images/hyperglass-icon.svg
+    height: null
+    width: 100%
+
+  # https://hyperglass.dev/docs/ui/text
+  text:
+    cache_icon: Cached from {time} UTC
+    cache_prefix: "Results cached for "
+    complete_time: Completed in {seconds}
+    fqdn_error: Unable to resolve {fqdn}
+    fqdn_error_button: Try Again
+    fqdn_message: Your browser has resolved {fqdn} to
+    fqdn_tooltip: Use {protocol}
+    no_communities: No Communities
+    query_location: Location
+    query_target: Target
+    query_type: Query Type
+    query_vrf: Routing Table
+    rpki_invalid: Invalid
+    rpki_unknown: No ROAs Exist
+    rpki_unverified: Not Verified
+    rpki_valid: Valid
+    subtitle: Network Looking Glass
+    title: hyperglass
+    title_mode: logo_subtitle
+
+  # -------------------------------------------------------------------------
+  # Tema / governança visual — https://hyperglass.dev/docs/ui/theme
+  #                           e https://hyperglass.dev/docs/ui/example  (FUTURO)
+  # -------------------------------------------------------------------------
+  theme:
+    # default | dark | light
+    default: default
+    # permitir o usuário alternar tema na interface
+    show_toggle: true
+    # cores (hex) usadas quando o tema customizado estiver ativo
+    colors:
+      primary: "#38bdf8"
+      secondary: "#0f172a"
+      text: "#e2e8f0"
+      background: "#0f172a"
