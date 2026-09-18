@@ -1,0 +1,45 @@
+# Perfil de comandos para o NOS cisco_ios (IOS / IOS-XE).
+#
+# `commands:` define a WHITELIST do NOS e os formatos de cada comando.
+# Placeholders:
+#   $<param>          parâmetro informado pelo usuário (declarado em `params`)
+#   $source_address   preenchido automaticamente com source_address do VRF do
+#                     device (ipv4/ipv6 conforme o destino) — nunca vem do usuário
+# Tipos de parâmetro: destination | ip | prefix | hostname
+# `timeout:` override do timeout de leitura (default: DEFAULT_COMMAND_TIMEOUT)
+# `parser:` reservado para a fase futura de parsing estruturado do output
+
+commands:
+  show-ip-route:
+    description: "Rota IP (show ip route)"
+    template: "show ip route"
+    timeout: 300
+
+  show-bgp-summary:
+    description: "Resumo da tabela BGP (show ip bgp summary)"
+    template: "show ip bgp summary"
+    timeout: 120
+
+  show-bgp-prefix:
+    description: "Detalhe de um prefixo BGP (show ip bgp <prefixo>)"
+    template: "show ip bgp $prefix"
+    timeout: 120
+    params:
+      prefix:
+        type: prefix
+
+  ping:
+    description: "Testar alcance (ping <ip> source <source_address>)"
+    template: "ping $ip source $source_address"
+    timeout: 60
+    params:
+      ip:
+        type: destination
+
+  traceroute:
+    description: "Traçar caminho até o destino (traceroute <destino>)"
+    template: "traceroute $destination"
+    timeout: 90
+    params:
+      destination:
+        type: destination

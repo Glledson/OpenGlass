@@ -1,0 +1,23 @@
+[project]
+name = "openglass"
+version = "0.0.1"
+description = "OpenGlass - ferramenta web de diagnostico de rede em roteadores de borda (fase 1: backend CLI)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "netmiko>=4.7.0",
+    "pydantic-settings>=2.15.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.scripts]
+openglass = "openglass.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.16,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

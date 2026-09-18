@@ -1,0 +1,18 @@
+# Python generated
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual env
+.venv/
+
+# Environment e credenciais
+.env
+devices.yaml
+
+# Cache de teste
+.pytest_cache/
+.ruff_cache/
