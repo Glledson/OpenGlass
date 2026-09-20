@@ -13,7 +13,7 @@ class TestLoadProfile:
     def test_loads_cisco_ios(self) -> None:
         profile = load_profile("cisco_ios")
         assert set(profile.commands) == {
-            "show-bgp-prefix",
+            "bgp-route",
             "ping",
             "traceroute",
         }
@@ -22,8 +22,8 @@ class TestLoadProfile:
         assert ping.params["ip"].type == "destination"
         assert ping.timeout == 60
         assert ping.parser == "ping"
-        assert profile.commands["show-bgp-prefix"].params["prefix"].type == "prefix"
-        assert profile.commands["show-bgp-prefix"].parser == "bgp_prefix"
+        assert profile.commands["bgp-route"].params["prefix"].type == "prefix"
+        assert profile.commands["bgp-route"].parser == "bgp_prefix"
         traceroute = profile.commands["traceroute"]
         assert (
             traceroute.template == "traceroute $ip source $source_address"

@@ -69,7 +69,7 @@ def test_commands_for_device(client) -> None:
     response = client.get("/api/devices/r1/commands")
     assert response.status_code == 200
     names = {command["name"] for command in response.json()}
-    assert names == {"show-bgp-prefix", "ping", "traceroute"}
+    assert names == {"bgp-route", "ping", "traceroute"}
 
 
 def test_unknown_device_returns_404(client) -> None:

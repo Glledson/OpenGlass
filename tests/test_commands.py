@@ -34,7 +34,7 @@ def _device(source4="192.0.2.10", source6="2001:db8::1", vrfs=True) -> Device:
 class TestRegistry:
     def test_whitelist_from_profile(self) -> None:
         assert set(list_commands("cisco_ios")) == {
-            "show-bgp-prefix",
+            "bgp-route",
             "ping",
             "traceroute",
         }
@@ -42,7 +42,7 @@ class TestRegistry:
 
 class TestBuildCommand:
     def test_simple_command_with_param(self) -> None:
-        spec, command = build_command("cisco_ios", "show-bgp-prefix", {"prefix": "8.8.8.0/24"})
+        spec, command = build_command("cisco_ios", "bgp-route", {"prefix": "8.8.8.0/24"})
         assert command == "show ip bgp 8.8.8.0/24"
         assert spec.timeout == 120
 
@@ -85,7 +85,7 @@ class TestBuildCommand:
         with pytest.raises(SecurityError):
             build_command("cisco_ios", "ping", {"ip": "8.8.8.8; show running-config"}, device=_device())
         with pytest.raises(SecurityError):
-            build_command("cisco_ios", "show-bgp-prefix", {"prefix": "8.8.8.0/24 & reboot"})
+            build_command("cisco_ios", "bgp-route", {"prefix": "8.8.8.0/24 & reboot"})
 
     def test_unknown_nos_profile_rejected(self) -> None:
         with pytest.raises(Exception):
