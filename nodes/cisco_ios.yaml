@@ -10,18 +10,9 @@
 # `parser:` nome de um parser registrado em openglass/parsers (ex.: ping)
 
 commands:
-  show-ip-route:
-    description: "Rota IP (show ip route)"
-    template: "show ip route"
-    timeout: 300
 
-  show-bgp-summary:
-    description: "Resumo da tabela BGP (show ip bgp summary)"
-    template: "show ip bgp summary"
-    timeout: 120
-
-  show-bgp-prefix:
-    description: "Detalhe de um prefixo BGP (show ip bgp <prefixo>)"
+  bgp-route:
+    description: "BGP Route"
     template: "show ip bgp $prefix"
     timeout: 120
     parser: bgp_prefix
@@ -30,7 +21,7 @@ commands:
         type: prefix
 
   ping:
-    description: "Testar alcance (ping <ip> source <source_address>)"
+    description: "Ping"
     template: "ping $ip source $source_address"
     timeout: 60
     parser: ping
@@ -39,9 +30,10 @@ commands:
         type: destination
 
   traceroute:
-    description: "Traçar caminho até o destino (traceroute <destino>)"
-    template: "traceroute $destination"
+    description: "Traceroute"
+    template: "traceroute $ip source $source_address"
     timeout: 90
+    parser: traceroute
     params:
-      destination:
+      ip:
         type: destination

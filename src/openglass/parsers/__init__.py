@@ -9,7 +9,7 @@ onde `context` traz os parâmetros validados do comando (ex.: o prefixo).
 
 from typing import Callable
 
-from openglass.parsers import bgp_prefix, ping
+from openglass.parsers import bgp_prefix, ping, traceroute
 from openglass.parsers.base import ParserError
 
 Parser = Callable[..., dict]
@@ -17,6 +17,7 @@ Parser = Callable[..., dict]
 PARSERS: dict[str, Parser] = {
     "ping": ping.parse_ping,
     "bgp_prefix": bgp_prefix.parse_bgp_prefix,
+    "traceroute": traceroute.parse_traceroute,
 }
 PARSER_NAMES = frozenset(PARSERS)
 

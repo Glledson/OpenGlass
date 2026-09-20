@@ -588,6 +588,90 @@
     .flag-ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
     .flag-bad { color: var(--err); border-color: color-mix(in srgb, var(--err) 45%, transparent); }
 
+    /* ---------- Traceroute ---------- */
+    .tr { }
+    .tr-head {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+    }
+    .tr-dest {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--fg);
+      word-break: break-all;
+    }
+    .tr-dest span { font-family: var(--sans); font-weight: 400; font-size: .78rem; color: var(--muted); }
+    .tr-hops {
+      font-size: .82rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 10px;
+    }
+    .tr-hops-list {
+      display: flex;
+      flex-direction: column;
+      margin-top: 16px;
+      gap: 6px;
+    }
+    .tr-hop {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px 10px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+    }
+    .tr-hop.last {
+      border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+    }
+    .tr-idx {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      color: var(--accent);
+      font-size: .82rem;
+      font-weight: 700;
+      flex: none;
+    }
+    .tr-ip { font-size: .9rem; word-break: break-all; }
+    .tr-asn {
+      font-size: .72rem;
+      color: var(--accent);
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+    .tr-probes { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+    .tr-probe {
+      font-size: .74rem;
+      border-radius: 6px;
+      padding: 2px 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .tr-probe.tr-ok { color: var(--ok); }
+    .tr-probe.tr-timeout { color: var(--muted); }
+    .tr-probe.tr-err { color: var(--err); }
+    .tr-avg {
+      font-size: .78rem;
+      color: var(--fg);
+      border-left: 1px solid var(--border);
+      padding-left: 10px;
+    }
+    .tr-avg.muted { color: var(--muted); }
+
     /* ---------- Rodapé / links ---------- */
     nav#links {
       display: flex;
@@ -1057,12 +1141,68 @@
         </div>`;
     }
 
+    function trProbes(times) {
+      return (times || [])
+        .map((probe) => {
+          if (probe.type === "reply") {
+            return `<span class="tr-probe tr-ok">${probe.ms} ms</span>`;
+          }
+          if (probe.type === "timeout") {
+            return `<span class="tr-probe tr-timeout" title="sem resposta">*</span>`;
+          }
+          return `<span class="tr-probe tr-err" title="falha (${esc(probe.code)})">${esc(probe.code)}</span>`;
+        })
+        .join("");
+    }
+
+    function trHopRow(hop, isLast) {
+      const asn = hop.asn != null ? `<span class="tr-asn">AS ${hop.asn}</span>` : "";
+      const avg =
+        hop.avg_ms != null
+          ? `<span class="tr-avg">${hop.avg_ms} ms</span>`
+          : `<span class="tr-avg muted">sem resposta</span>`;
+      return `
+        <div class="tr-hop ${isLast ? "last" : ""}">
+          <span class="tr-idx">${hop.hop}</span>
+          <span class="tr-ip mono">${hop.ip ? esc(hop.ip) : "—"}</span>
+          ${asn}
+          <span class="tr-probes">${trProbes(hop.times)}</span>
+          ${avg}
+        </div>`;
+    }
+
+    function tracerouteCard(p) {
+      const badges = {
+        success: ["success", "✓ Chegou ao destino"],
+        partial: ["partial", "⚠ Incompleto"],
+        failed: ["failed", "✗ Sem resposta"],
+        unreachable: ["failed", "✗ Inalcançável"],
+      };
+      const [badgeCls, badgeText] = badges[p.status] || ["partial", esc(p.status)];
+      const hops = p.hops || [];
+
+      return `
+        <div class="tr">
+          <div class="tr-head">
+            <span class="badge ${badgeCls}">${badgeText}</span>
+            <span class="tr-dest"><span>Destino</span>${esc(p.destination || "?")}</span>
+            <span class="tr-hops">${hops.length} salto${hops.length === 1 ? "" : "s"}</span>
+          </div>
+          <div class="tr-hops-list">
+            ${hops.map((hop, index) => trHopRow(hop, index === hops.length - 1)).join("")}
+            ${!hops.length ? `<p class="rtt-empty">Nenhum salto respondeu ao traceroute.</p>` : ""}
+          </div>
+        </div>`;
+    }
+
     function renderParsed(parsed) {
       let html = "";
       if (parsed && parsed.type === "ping") {
         html = pingCard(parsed);
       } else if (parsed && parsed.type === "bgp_prefix") {
         html = bgpPrefixCard(parsed);
+      } else if (parsed && parsed.type === "traceroute") {
+        html = tracerouteCard(parsed);
       }
       if (html) {
         $parsed.innerHTML = html;

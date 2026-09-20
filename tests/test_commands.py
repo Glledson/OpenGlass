@@ -34,8 +34,6 @@ def _device(source4="192.0.2.10", source6="2001:db8::1", vrfs=True) -> Device:
 class TestRegistry:
     def test_whitelist_from_profile(self) -> None:
         assert set(list_commands("cisco_ios")) == {
-            "show-ip-route",
-            "show-bgp-summary",
             "show-bgp-prefix",
             "ping",
             "traceroute",
@@ -43,13 +41,13 @@ class TestRegistry:
 
 
 class TestBuildCommand:
-    def test_simple_command_no_device(self) -> None:
-        spec, command = build_command("cisco_ios", "show-ip-route")
-        assert command == "show ip route"
-        assert spec.timeout == 300
+    def test_simple_command_with_param(self) -> None:
+        spec, command = build_command("cisco_ios", "show-bgp-prefix", {"prefix": "8.8.8.0/24"})
+        assert command == "show ip bgp 8.8.8.0/24"
+        assert spec.timeout == 120
 
     def test_command_timeout_from_profile(self) -> None:
-        spec, _ = build_command("cisco_ios", "traceroute", {"destination": "1.1.1.1"})
+        spec, _ = build_command("cisco_ios", "traceroute", {"ip": "1.1.1.1"})
         assert spec.effective_timeout() == 90
 
     def test_ping_without_source_from_vrf(self) -> None:
@@ -137,15 +135,36 @@ class TestRun:
         assert result.raw == "!! saida fora do formato de ping"
         assert result.parsed is None
 
-    def test_command_without_parser_has_no_parsed(self) -> None:
-        class FakeSession:
-            device = _device()
+    def test_command_without_parser_has_no_parsed(self, tmp_path, monkeypatch) -> None:
+        (tmp_path / "nos.yaml").write_text(
+            "commands:\n"
+            "  show-something:\n"
+            "    template: 'show something'\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(settings, "nodes_dir", str(tmp_path))
 
-            def run_command(self, command: str, timeout: float) -> str:
-                return "C 1.1.1.1 is directly connected"
+        from openglass.nodes import clear_profile_cache
 
-        from openglass.commands import run as run_command
+        clear_profile_cache()
+        try:
 
-        result = run_command(FakeSession(), "show-ip-route")
-        assert result.parser is None
-        assert result.parsed is None
+            class FakeSession:
+                device = Device(
+                    name="r1",
+                    address="192.0.2.1",
+                    nos="nos",
+                    credential={"username": "admin", "password": "secret"},
+                )
+
+                def run_command(self, command: str, timeout: float) -> str:
+                    return "algum output cru"
+
+            from openglass.commands import run as run_command
+
+            result = run_command(FakeSession(), "show-something")
+            assert result.raw == "algum output cru"
+            assert result.parser is None
+            assert result.parsed is None
+        finally:
+            clear_profile_cache()

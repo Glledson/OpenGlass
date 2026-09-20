@@ -1,18 +1,3 @@
-"""Inventário de dispositivos de rede (formato compatível com hyperglass).
-
-Carrega os roteadores a partir de devices.yaml (seção `routers:`), mantendo
-credenciais fora do código e com interpolação de variáveis de ambiente (${VAR}).
-
-Campos ativos nesta fase:
-- address, credential (username/password/key_path), port, nos
-
-Campos ARMazenados (fase futura de parsing/filtro — ainda não usados):
-- network (name/display_name)
-- vrfs (source_address e access_lists por família IP)
-
-Modelagem inspirada em: https://hyperglass.dev/docs/adding-devices
-"""
-
 import os
 from pathlib import Path
 from typing import Literal

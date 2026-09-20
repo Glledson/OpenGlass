@@ -66,11 +66,13 @@ _STATUS_MARK = {"success": "✓", "partial": "⚠", "failed": "✗"}
 
 
 def _format_parsed(parsed: dict) -> str | None:
-    """Resumo didático do resultado estruturado (por enquanto, ping e prefixo)."""
+    """Resumo didático do resultado estruturado (ping, prefixo e traceroute)."""
     if parsed.get("type") == "ping":
         return _format_ping_parsed(parsed)
     if parsed.get("type") == "bgp_prefix":
         return _format_bgp_prefix_parsed(parsed)
+    if parsed.get("type") == "traceroute":
+        return _format_traceroute_parsed(parsed)
     return None
 
 
@@ -122,6 +124,32 @@ def _format_bgp_prefix_parsed(parsed: dict) -> str:
         parts.append("não anunciado")
     elif parsed.get("advertised") is True and parsed.get("update_groups"):
         parts.append("anunciado a ug " + ",".join(parsed["update_groups"]))
+    return " · ".join(parts)
+
+
+def _format_traceroute_parsed(parsed: dict) -> str:
+    destination = parsed.get("destination") or "?"
+    hops = parsed.get("hops") or []
+    last = hops[-1] if hops else None
+
+    if parsed.get("status") == "unreachable":
+        return f"✗ traceroute {destination} · {parsed.get('message') or 'destino inalcançável'}"
+
+    parts = [f"{_STATUS_MARK.get(parsed.get('status'), '•')} traceroute {destination}"]
+    if not hops:
+        parts.append("nenhum salto respondido")
+        return " · ".join(parts)
+
+    parts.append(f"{len(hops)} salto(s)")
+    last_label = f"{last['ip'] or 'IP desconhecido'}"
+    if last.get("asn"):
+        last_label += f" (AS {last['asn']})"
+    if parsed.get("reachable"):
+        parts.append(f"chegou em {last_label}")
+    else:
+        parts.append(f"parou em {last_label}")
+    if last and last.get("avg_ms") is not None:
+        parts.append(f"rtt ~{last['avg_ms']} ms")
     return " · ".join(parts)
 
 

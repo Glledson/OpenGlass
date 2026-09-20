@@ -1,12 +1,3 @@
-"""Configuração de site/UI (openglass.yaml) — campos exibidos no frontend.
-
-Baseado no hyperglass (https://hyperglass.dev/docs/parameters).
-
-As chaves são tratadas de forma case-insensitive (ex.: `Logo` == `logo`) para
-tolerar edições manuais. Seções ainda não usadas pela aplicação são ignoradas,
-então o arquivo pode crescer sem quebrar o carregamento.
-"""
-
 from pathlib import Path
 from typing import Any
 
