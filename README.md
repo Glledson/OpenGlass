@@ -24,10 +24,55 @@ com a saída bruta sempre disponível como referência.
 
 ## Instalação
 
+### Instalador (produção)
+
+```bash
+git clone https://github.com/Glledson/OpenGlass.git
+cd OpenGlass
+sudo bash install.sh
+```
+
+O instalador, de forma interativa (TUI com whiptail; use `--text` para
+prompts em modo texto, útil em automação):
+
+1. verifica root, detecta o SO (Debian 11+/Ubuntu 20.04+) e atualiza o sistema;
+2. instala dependências (git, curl, python3, uv, whiptail), clona o projeto em
+   `/opt/openglass` e cria a pasta `/etc/openglass/`;
+3. se já houver instalação, pergunta se deseja **reconfigurar do zero**,
+   **editar** (mantém ativos atuais) ou cancelar;
+4. configura o **site** (ASN, nome do provedor, site e contato do NOC) com
+   validação em tempo real e tela de confirmação (**Confirmar/Corrigir/
+   Cancelar** — "Corrigir" volta com o formulário pré-preenchido);
+5. configura os **ativos** (roteadores: nome, vendor vindo de `nodes/`, IPv4,
+   source IPv4, comunidade SNMP, usuário/senha SSH e porta) com confirmação e
+   repetição;
+6. gera `/etc/openglass/openglass.yaml` e `/etc/openglass/devices.yaml` (com
+   backup `.bak.<timestamp>` antes de sobrescrever), cria o `.env` do serviço
+   e roda um teste do CLI.
+
+Como serviço web (systemd, no boot):
+
+```bash
+sudo bash install.sh --service
+```
+
+Remover o serviço e os symlinks (mantém as configurações):
+
+```bash
+sudo bash install.sh --uninstall
+```
+
+Opções extras: `--no-apt` (pula atualização/instalação de pacotes), `--no-uv`,
+`--no-symlinks`, `--text`, `-d DIR` (diretório do repositório), `-c DIR`
+(config).
+
+### Instalação manual (desenvolvimento)
+
 ```bash
 uv sync
-cp devices.yaml.example devices.yaml   # preencha com seus roteadores
-cp .env.example .env                   # timeouts, se quiser ajustar
+cp .env.example .env                        # timeouts, se quiser ajustar
+cp openglass.yaml.example openglass.yaml    # ajuste org_name, primary_asn…
+cp devices.yaml.example devices.yaml        # preencha com seus roteadores
 ```
 
 ## Uso
@@ -71,7 +116,7 @@ novos NOS entram com um perfil por arquivo em `nodes/`.
 uv run pytest
 ```
 
-**120 testes** (com Netmiko mockado e saídas reais de exemplo; sem dispositivo real).
+**165 testes** (com Netmiko mockado e saídas reais de exemplo; sem dispositivo real).
 
 ## Estrutura
 
@@ -86,5 +131,6 @@ src/openglass/
   cli.py                CLI interativo/one-shot
   api.py                API + frontend estático (FastAPI)
   static/index.html     frontend
-tests/                  suíte de testes (120)
+tests/                  suíte de testes (165)
+install.sh              instalador interativo (root: sudo bash install.sh)
 ```

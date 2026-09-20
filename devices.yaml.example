@@ -3,8 +3,8 @@
 #
 # Formato compatível com hyperglass (https://hyperglass.dev/docs/adding-devices).
 # Campos ativos nesta fase: address, credential, port, nos.
-# network e vrfs são ARMazenados para a fase futura de parsing/filtro (ainda
-# não usados pela engine de comandos).
+# snmp e network/vrfs são armazenados para fase futura (monitoramento,
+# parsing/filtro) — ainda não usados pela engine de comandos.
 #
 # Credenciais podem vir de variáveis de ambiente via ${VAR}:
 #   password: ${ROUTER_PASSWORD}
@@ -22,6 +22,8 @@ routers:
       password: "${ROUTER_PASSWORD}"
     port: 22
     nos: cisco_ios
+    snmp:
+      community: public
     vrfs:
       - name: global
         default: true

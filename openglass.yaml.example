@@ -1,12 +1,18 @@
 # ---------------------------------------------------------------------------
-# Geral
+# OpenGlass — configuração do site (template de instalação)
 # ---------------------------------------------------------------------------
+# O install.sh copia este arquivo para /etc/openglass/openglass.yaml e
+# substitui os marcadores abaixo com as respostas do assistente:
+#   ASN          -> primary_asn
+#   ORG_NAME     -> org_name
+#   SITE_TITLE   -> site_title
+#   NOC_EMAIL    -> email de contato exibido no menu "Contato"
 debug: false
 developer_mode: false
 
-org_name: LG Telecom
-primary_asn: 12345
-site_title: Open Glass LG
+org_name: ORG_NAME
+primary_asn: ASN
+site_title: SITE_TITLE
 site_description: "{org_name} Network Open Glass"
 site_keywords: [openglass, Open glass, routing, bgp]
 
@@ -57,7 +63,7 @@ logging:
   max_size: "50 MB"
 
 # ---------------------------------------------------------------------------
-# Consultas habilitadas 
+# Consultas habilitadas
 # ---------------------------------------------------------------------------
 queries:
   bgp_route:
@@ -65,23 +71,13 @@ queries:
     enable: true
 
   bgp_community:
-    # Huawei no modo structured não funciona
     display_name: BGP Community
     enable: false
     mode: select
-    communities:
-      - community: "12345:666"
-        display_name: Blackhole
-        description: "12345:666"
 
   bgp_aspath:
-    # Huawei no modo structured não funciona
     display_name: BGP AS Path
     enable: false
-    pattern:
-      asdot: '^(\^|^\_)((\d+\.\d+)\_|(\d+\.\d+)\$|(\d+\.\d+)\(\_\.\+\_\))+$'
-      asplain: '^(\^|^\_)(\d+\_|\d+\$|\d+\(\_\.\+\_\))+$'
-      mode: asplain
 
   ping:
     display_name: Ping
@@ -98,53 +94,27 @@ structured:
   rpki:
     mode: external
 
-  # communities:
-  #   # Para não exibir nenhuma community
-  #   mode: deny
-
-  # communities:
-  #   # Para permitir apenas...
-  #   mode: permit
-  #   items:
-  #     - '65000:\d+'
-  #     - '65[1-4]00:\d+'
-
 # ---------------------------------------------------------------------------
 # UI / website (FUTURO)
 # ---------------------------------------------------------------------------
 web:
   links:
     - title: PeeringDB
-      url: https://www.peeringdb.com/asn/12345
+      url: "https://www.peeringdb.com/asn/ASN"
       side: left
       order: 1
-    - title: Qrator
-      url: https://radar.qrator.net/AS12345
+    - title: RADb
+      url: "https://www.radb.net/query?advanced_query=&keywords=ASASN"
       side: left
       order: 2
-    - title: RADb
-      url: "https://www.radb.net/query?advanced_query=&keywords=AS12345"
+    - title: IRR Explorer
+      url: "https://irrexplorer.nlnog.net/asn/ASASN"
       side: left
       order: 3
-    - title: IRR Explorer
-      url: https://irrexplorer.nlnog.net/asn/AS12345
-      side: left
-      order: 4
-    - title: RDAP
-      url: https://rdap.registro.br/autnum/12345
-      side: left
-      order: 5
-    - title: LG
-      url: https://www.LG.com.br
-      side: right
-      order: 0
 
   menus:
     - title: Contato
-      content: "Please contact [gledsom.bash@gmail.com](mailto:gledsom.bash@gmail.com) to get support."
-      side: right
-    - title: Termos e Condições
-      content: terms-and-conditions.md
+      content: "Please contact [NOC_EMAIL](mailto:NOC_EMAIL) to get support."
       side: right
 
   logo:
@@ -170,19 +140,13 @@ web:
     rpki_unknown: No ROAs Exist
     rpki_unverified: Not Verified
     rpki_valid: Valid
-    subtitle: Provedor de Internet LG Telecom
+    subtitle: OpenGlass Network Diagnostics
     title: openglass
     title_mode: logo_subtitle
 
-  # -------------------------------------------------------------------------
-  # Tema / governança visual (FUTURO)
-  # -------------------------------------------------------------------------
   theme:
-    # default | dark | light
     default: default
-    # permitir o usuário alternar tema na interface
     show_toggle: true
-    # cores (hex) usadas quando o tema customizado estiver ativo
     colors:
       primary: "#38bdf8"
       secondary: "#0f172a"

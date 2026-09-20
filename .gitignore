@@ -12,6 +12,7 @@ wheels/
 # Environment e credenciais
 .env
 devices.yaml
+openglass.yaml
 
 # Cache de teste
 .pytest_cache/

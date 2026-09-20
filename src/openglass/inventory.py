@@ -33,6 +33,12 @@ class NetworkInfo(BaseModel):
     display_name: str | None = None
 
 
+class SnmpInfo(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    community: str | None = None
+
+
 class AccessEntry(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -76,6 +82,7 @@ class Device(BaseModel):
     port: int = Field(default=22, ge=1, le=65535)
     nos: str = "cisco_ios"
     network: NetworkInfo | None = None
+    snmp: SnmpInfo | None = None
     vrfs: list[Vrf] | None = None
 
     @property

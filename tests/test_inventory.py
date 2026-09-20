@@ -125,3 +125,24 @@ routers:
         assert vrf.ipv4.access_list[0].network == "0.0.0.0/0"
         assert vrf.ipv4.access_list[0].action == "permit"
         assert vrf.ipv6.access_list[0].le == 128
+
+    def test_snmp_community_stored(self, tmp_path) -> None:
+        content = """
+routers:
+  - name: r1
+    address: 192.0.2.1
+    credential:
+      username: u
+      password: p
+    nos: cisco_ios
+    snmp:
+      community: public
+"""
+        path = _write_yaml(tmp_path, content)
+        device = load_inventory(path)[0]
+        assert device.snmp is not None
+        assert device.snmp.community == "public"
+
+    def test_snmp_optional(self, tmp_path) -> None:
+        path = _write_yaml(tmp_path, GOOD_YAML)
+        assert load_inventory(path)[0].snmp is None
