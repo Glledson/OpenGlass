@@ -52,6 +52,20 @@ LOCAL = (
 
 NOT_IN_TABLE = "% Network not in table\n"
 
+NO_REFRESH = (
+    "BGP routing table entry for 10.0.0.0/24, version 42\n"
+    "Paths: (2 available, best #2, table default)\n"
+    "  Not advertised to any peer\n"
+    "  100 200\n"
+    "    10.0.0.1 from 10.0.0.1 (10.0.0.1)\n"
+    "      Origin IGP, localpref 100, valid, ebgp\n"
+    "      rx pathid: 0, tx pathid: 0\n"
+    "  300 200\n"
+    "    10.0.0.2 from 10.0.0.2 (10.0.0.2)\n"
+    "      Origin IGP, localpref 200, valid, ebgp, best\n"
+    "      rx pathid: 0, tx pathid: 0\n"
+)
+
 
 class TestBgpPrefixParser:
     def test_two_paths_summary(self) -> None:
@@ -112,6 +126,17 @@ class TestBgpPrefixParser:
     def test_invalid_output_raises(self) -> None:
         with pytest.raises(ParserError):
             parse_bgp_prefix("% Invalid input detected at '^' marker.\n")
+
+    def test_multiple_paths_without_refresh_epoch(self) -> None:
+        result = parse_bgp_prefix(NO_REFRESH)
+        assert len(result["paths"]) == 2
+        first, second = result["paths"]
+        assert first["as_path"] == ["100", "200"]
+        assert first["next_hop"] == "10.0.0.1"
+        assert second["as_path"] == ["300", "200"]
+        assert second["next_hop"] == "10.0.0.2"
+        assert second["best"] is True
+        assert result["best_index"] == 2
 
 
 class TestRegistry:

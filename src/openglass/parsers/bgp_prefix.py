@@ -63,33 +63,21 @@ def _parse_as_path(text: str) -> list[str]:
     return [tok for tok in tokens if _NUMERIC_RE.match(tok) or _AS_SET_RE.match(tok)]
 
 
-def _parse_path(index: int, lines: list[str]) -> dict | None:
-    """Monta um path a partir das linhas de um bloco."""
+def _parse_path(index: int, lines: list[str], as_path_text: str | None) -> dict | None:
+    """Monta um path a partir das linhas do bloco (ancoradas no 'from')."""
     attr_line = next((line for line in lines if _ATTR_RE.match(line)), None)
     if attr_line is None:
         return None
 
-    nh_match = next((_NH_RE.match(line) for line in lines if _NH_RE.match(line)), None)
+    nh_match = next((_NH_RE.match(line) for line in lines), None)
+    if nh_match is None:
+        return None
+
     pathid_match = next(
         (_PATHID_RE.search(line) for line in lines if _PATHID_RE.search(line)), None
     )
 
-    if nh_match is None:
-        # path local/origem: "0.0.0.0 from 0.0.0.0" ainda casa; sem "from" é inválido
-        return None
-
-    as_path_text = "Local"
-    for i, line in enumerate(lines):
-        if _NH_RE.match(line):
-            for candidate in reversed(lines[:i]):
-                token = candidate.strip()
-                if not token or _REFRESH_RE.match(candidate) or _ATTR_RE.match(candidate):
-                    continue
-                if _PATHID_RE.search(candidate):
-                    continue
-                as_path_text = token
-                break
-            break
+    as_path_text = (as_path_text or "Local").strip()
 
     attr = _ATTR_RE.match(attr_line)
     rest = attr.group("rest")
@@ -130,20 +118,13 @@ def _parse_path(index: int, lines: list[str]) -> dict | None:
     }
 
 
-def _split_path_blocks(lines: list[str]) -> list[list[str]]:
-    """Separa as linhas dos paths, tratando o cabeçalho de advertisement."""
-    blocks: list[list[str]] = []
-    current: list[str] = []
+def _clean_body(lines: list[str]) -> list[str]:
+    """Remove cabeçalhos (advertisement/update-groups) e linhas vazias."""
+    out: list[str] = []
     in_groups = False
-
     for line in lines:
         stripped = line.strip()
-        if not stripped:
-            continue
-        if _REFRESH_RE.match(line):
-            if current:
-                blocks.append(current)
-                current = []
+        if not stripped or _REFRESH_RE.match(line):
             in_groups = False
             continue
         if _NOT_ADVERTISED_RE.search(line):
@@ -151,15 +132,27 @@ def _split_path_blocks(lines: list[str]) -> list[list[str]]:
         if _ADVERTISED_RE.search(line):
             in_groups = True
             continue
-        if in_groups:
-            if _GROUPS_RE.match(line):
-                continue
-            in_groups = False
-        current.append(line)
+        if in_groups and _GROUPS_RE.match(line):
+            continue
+        in_groups = False
+        out.append(line)
+    return out
 
-    if current:
-        blocks.append(current)
-    return blocks
+
+def _extract_paths(body: list[str]) -> list[dict]:
+    """Separa os paths usando o 'next_hop from ...' como âncora (independe de
+    'Refresh Epoch', que alguns IOS não imprimem). A linha de AS path de cada
+    path é a imediatamente anterior à linha do 'from'."""
+    nh_indices = [i for i, line in enumerate(body) if _NH_RE.match(line)]
+    paths: list[dict] = []
+    for order, i in enumerate(nh_indices):
+        end = nh_indices[order + 1] if order + 1 < len(nh_indices) else len(body)
+        block = body[i:end]
+        as_path_text = body[i - 1].strip() if i > 0 else None
+        path = _parse_path(len(paths) + 1, block, as_path_text)
+        if path is not None:
+            paths.append(path)
+    return paths
 
 
 def parse_bgp_prefix(output: str, context: dict | None = None) -> dict:
@@ -200,8 +193,7 @@ def parse_bgp_prefix(output: str, context: dict | None = None) -> dict:
                     break
 
     paths: list[dict] = []
-    for block in _split_path_blocks(after):
-        path = _parse_path(len(paths) + 1, block)
+    for path in _extract_paths(_clean_body(after)):
         if path is not None:
             paths.append(path)
 

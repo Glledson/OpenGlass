@@ -96,13 +96,21 @@ def _format_bgp_prefix_parsed(parsed: dict) -> str:
         return f"⚠ {prefix} · não está na tabela BGP"
 
     paths = parsed.get("paths") or []
-    best = next((path for path in paths if path.get("best")), paths[0] if paths else None)
+    best = next((path for path in paths if path.get("best")), None)
     parts = [f"★ {prefix}", f"{parsed.get('available', len(paths))} path(s)"]
     if best:
         parts.append(
             f"melhor #{best.get('index')}: {best.get('as_path_text') or '?'} "
             f"via {best.get('next_hop')}"
         )
+    elif paths:
+        # sem best path (ex.: "no best path"): usa o primeiro como referência
+        first = paths[0]
+        parts.append(
+            f"path #{first.get('index')}: {first.get('as_path_text') or '?'} "
+            f"via {first.get('next_hop')}"
+        )
+    if best:
         attrs = []
         if best.get("origin"):
             attrs.append(best["origin"])
