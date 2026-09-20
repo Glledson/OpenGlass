@@ -207,6 +207,55 @@
       color: var(--accent);
     }
 
+    #status.reserved {
+      border: 1px solid color-mix(in srgb, var(--err) 45%, transparent);
+      background: color-mix(in srgb, var(--err) 8%, transparent);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--fg);
+    }
+
+    .rfc-alert-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--err);
+    }
+
+    .rfc-alert-title::before {
+      content: "⚠";
+    }
+
+    .rfc-alert-value {
+      margin-top: 5px;
+      font-family: var(--mono);
+      font-weight: 700;
+      word-break: break-all;
+    }
+
+    .rfc-alert-meta {
+      margin-top: 9px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .rfc-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: .76rem;
+      color: var(--muted);
+    }
+
+    .rfc-card b {
+      color: var(--accent);
+    }
+
     /* ---------- Resultado (terminal) ---------- */
     .result {
       margin-top: 20px;
@@ -844,8 +893,32 @@
     async function api(url, options) {
       const res = await fetch(url, options);
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.detail || `Erro ${res.status}`);
+      if (!res.ok) {
+        const detail = data.detail;
+        const message =
+          typeof detail === "string"
+            ? detail
+            : (detail && detail.message) || `Erro ${res.status}`;
+        const err = new Error(message);
+        if (detail && typeof detail === "object") {
+          err.code = detail.code || null;
+          err.meta = detail.meta || null;
+        }
+        throw err;
+      }
       return data;
+    }
+
+    function rfcAlertHtml(meta) {
+      const m = meta || {};
+      return `
+        <div class="rfc-alert-title">Consulta bloqueada — destino em faixa reservada</div>
+        <div class="rfc-alert-value">${esc(m.requested)}</div>
+        <div class="rfc-alert-meta">
+          <span class="rfc-card"><b>${esc(m.rfc)}</b></span>
+          <span class="rfc-card">${esc(m.network)}</span>
+          <span class="rfc-card">${esc(m.purpose)}</span>
+        </div>`;
     }
 
     function setStatus(text, kind) {
@@ -1243,7 +1316,11 @@
         $raw.open = false;
         $result.classList.remove("hidden");
       } catch (err) {
-        setStatus(err.message, "err");
+        if (err.code === "reserved_range") {
+          setStatus(rfcAlertHtml(err.meta), "reserved");
+        } else {
+          setStatus(err.message, "err");
+        }
       } finally {
         setLoading(false);
       }

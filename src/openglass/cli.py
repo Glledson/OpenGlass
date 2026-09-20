@@ -24,7 +24,7 @@ from openglass.config import settings
 from openglass.connection import DeviceError, DeviceSession
 from openglass.inventory import Device, InventoryError, load_inventory
 from openglass.nodes import NodeError, load_profile
-from openglass.security import SecurityError
+from openglass.security import ReservedRangeError, SecurityError
 
 
 def _print_commands(nos: str, prefix: str = "  ") -> None:
@@ -293,6 +293,9 @@ def main(argv: list[str] | None = None) -> NoReturn:
             exit_code = one_shot(args.device, args.command, args.param)
         else:
             exit_code = interactive_mode(args.device)
+    except ReservedRangeError as exc:
+        print(f"[bloqueado] {exc}")
+        raise SystemExit(2)
     except (InventoryError, DeviceError, SecurityError, NodeError) as exc:
         print(f"[erro] {exc}")
         raise SystemExit(2)

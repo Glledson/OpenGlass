@@ -7,7 +7,7 @@ from openglass.commands import (
 )
 from openglass.config import settings
 from openglass.inventory import Device
-from openglass.security import SecurityError
+from openglass.security import ReservedRangeError, SecurityError
 
 DEST = {"ip": "8.8.8.8"}
 
@@ -86,6 +86,19 @@ class TestBuildCommand:
             build_command("cisco_ios", "ping", {"ip": "8.8.8.8; show running-config"}, device=_device())
         with pytest.raises(SecurityError):
             build_command("cisco_ios", "bgp-route", {"prefix": "8.8.8.0/24 & reboot"})
+
+    @pytest.mark.parametrize(
+        "label,params",
+        [
+            ("ping", {"ip": "192.168.1.1"}),
+            ("traceroute", {"ip": "10.0.0.1"}),
+            ("bgp-route", {"prefix": "172.16.0.0/12"}),
+            ("bgp-route", {"prefix": "10.0.0.0/8"}),
+        ],
+    )
+    def test_reserved_range_rejected(self, label: str, params: dict[str, str]) -> None:
+        with pytest.raises(ReservedRangeError):
+            build_command("cisco_ios", label, params, device=_device())
 
     def test_unknown_nos_profile_rejected(self) -> None:
         with pytest.raises(Exception):

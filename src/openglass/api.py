@@ -26,7 +26,7 @@ from openglass.config import settings
 from openglass.connection import DeviceError, DeviceSession
 from openglass.inventory import InventoryError, find_device, load_inventory
 from openglass.nodes import NodeError, load_profile
-from openglass.security import SecurityError
+from openglass.security import ReservedRangeError, SecurityError
 from openglass.site import SiteError, load_site_config
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -39,6 +39,25 @@ class RunRequest(BaseModel):
     device: str
     command: str
     params: dict[str, str] = Field(default_factory=dict)
+
+
+def _security_error(exc: SecurityError) -> HTTPException:
+    """Erro 400, com payload estruturado para o alerta de faixa reservada."""
+    if isinstance(exc, ReservedRangeError):
+        return HTTPException(
+            status_code=400,
+            detail={
+                "message": str(exc),
+                "code": "reserved_range",
+                "meta": {
+                    "requested": exc.requested,
+                    "rfc": exc.rfc,
+                    "network": exc.network,
+                    "purpose": exc.purpose,
+                },
+            },
+        )
+    return HTTPException(status_code=400, detail=str(exc))
 
 
 def _devices():
@@ -106,6 +125,8 @@ def run_command(request: RunRequest) -> dict:
     try:
         build_command(device.nos, request.command, request.params, device=device)
     except (SecurityError, NodeError) as exc:
+        if isinstance(exc, SecurityError):
+            raise _security_error(exc) from exc
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     try:
@@ -114,7 +135,7 @@ def run_command(request: RunRequest) -> dict:
     except DeviceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     except SecurityError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise _security_error(exc) from exc
 
     return {
         "command": result.command,

@@ -17,9 +17,65 @@ FORBIDDEN_CHARS = set(";&|`$!(){}[]<>'\"\\\n\r")
 _DESTINATION_RE = re.compile(r"^[A-Za-z0-9.-]+$")
 _HOSTNAME_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$")
 
+# Faixas de endereços que não podem ser alvo de consulta (internas/reservadas).
+# Layout de cada entrada: RFC, faixa (ip_network), finalidade (para o alerta).
+RFC_RESERVED_NETWORKS: list[dict] = [
+    {"rfc": "RFC 1918", "network": ipaddress.ip_network("10.0.0.0/8"), "purpose": "Privado"},
+    {"rfc": "RFC 1918", "network": ipaddress.ip_network("172.16.0.0/12"), "purpose": "Privado"},
+    {"rfc": "RFC 1918", "network": ipaddress.ip_network("192.168.0.0/16"), "purpose": "Privado"},
+    {"rfc": "RFC 6598", "network": ipaddress.ip_network("100.64.0.0/10"), "purpose": "CGN/CGNAT"},
+    {"rfc": "RFC 5737", "network": ipaddress.ip_network("192.0.2.0/24"), "purpose": "Documentação"},
+    {"rfc": "RFC 5737", "network": ipaddress.ip_network("198.51.100.0/24"), "purpose": "Documentação"},
+    {"rfc": "RFC 5737", "network": ipaddress.ip_network("203.0.113.0/24"), "purpose": "Documentação"},
+    {"rfc": "RFC 3927", "network": ipaddress.ip_network("169.254.0.0/16"), "purpose": "Link-local/APIPA"},
+    {"rfc": "RFC 1122", "network": ipaddress.ip_network("127.0.0.0/8"), "purpose": "Loopback"},
+    {"rfc": "RFC 4291", "network": ipaddress.ip_network("::1/128"), "purpose": "Loopback"},
+    {"rfc": "RFC 4291", "network": ipaddress.ip_network("::/128"), "purpose": "Indefinido"},
+    {"rfc": "RFC 4291", "network": ipaddress.ip_network("fe80::/10"), "purpose": "Link-local"},
+    {"rfc": "RFC 4193", "network": ipaddress.ip_network("fc00::/7"), "purpose": "ULA (privado IPv6)"},
+    {"rfc": "RFC 3849", "network": ipaddress.ip_network("2001:db8::/32"), "purpose": "Documentação"},
+]
+
 
 class SecurityError(Exception):
     pass
+
+
+class ReservedRangeError(SecurityError):
+    """Consulta a um endereço em faixa reservada (RFC)."""
+
+    def __init__(self, requested: str, entry: dict) -> None:
+        self.requested = requested
+        self.rfc = entry["rfc"]
+        self.network = str(entry["network"])
+        self.purpose = entry["purpose"]
+        super().__init__(
+            f"Consulta bloqueada: '{requested}' está em faixa reservada "
+            f"({self.rfc} — {self.purpose} — {self.network})"
+        )
+
+
+def _find_reserved(address) -> dict | None:
+    """Retorna a entrada da tabela que contém `address`, se houver."""
+    if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped:
+        address = address.ipv4_mapped
+    version = address.version
+    for entry in RFC_RESERVED_NETWORKS:
+        network = entry["network"]
+        if network.version != version:
+            continue
+        if isinstance(address, ipaddress.IPv4Address | ipaddress.IPv6Address):
+            if address in network:
+                return entry
+        elif address.subnet_of(network):
+            return entry
+    return None
+
+
+def _reject_if_reserved(requested: str, address) -> None:
+    entry = _find_reserved(address)
+    if entry is not None:
+        raise ReservedRangeError(requested, entry)
 
 
 def sanitize_parameter(value: str, field: str = "parâmetro") -> str:
@@ -38,9 +94,11 @@ def validate_ip(value: str, field: str = "IP") -> str:
     """Valida um endereço IP (IPv4 ou IPv6) e devolve em formato canônico."""
     cleaned = sanitize_parameter(value, field)
     try:
-        return str(ipaddress.ip_address(cleaned))
+        address = ipaddress.ip_address(cleaned)
     except ValueError as exc:
         raise SecurityError(f"{field} inválido: {cleaned!r} não é um endereço IP") from exc
+    _reject_if_reserved(cleaned, address)
+    return str(address)
 
 
 def validate_prefix(value: str, field: str = "prefixo") -> str:
@@ -48,17 +106,19 @@ def validate_prefix(value: str, field: str = "prefixo") -> str:
     cleaned = sanitize_parameter(value, field)
     # IP simples também é aceito (interpretado como /32)
     try:
-        ipaddress.ip_address(cleaned)
+        address = ipaddress.ip_address(cleaned)
+        _reject_if_reserved(cleaned, address)
         return cleaned
     except ValueError:
         pass
     try:
         network = ipaddress.ip_network(cleaned, strict=False)
-        return str(network)
     except ValueError as exc:
         raise SecurityError(
             f"{field} inválido: {cleaned!r} não é um IP nem um prefixo CIDR"
         ) from exc
+    _reject_if_reserved(cleaned, network)
+    return str(network)
 
 
 def validate_destination(value: str, field: str = "destino") -> str:
@@ -67,19 +127,29 @@ def validate_destination(value: str, field: str = "destino") -> str:
     - Sem ':' → hostname/IPv4: apenas letras, números, ponto e hífen.
     - Com ':' → aceito somente se for um endereço válido (IPv6), péla rigorosa
       para impedir injeção disfarçada.
+    - Endereços em faixa reservada (RFC 1918 etc.) são bloqueados; hostnames
+      não (podem resolver para IP público ou interno, mas não dá para saber).
     """
     cleaned = sanitize_parameter(value, field)
     if ":" in cleaned:
         try:
-            return str(ipaddress.ip_address(cleaned))
+            address = ipaddress.ip_address(cleaned)
         except ValueError as exc:
             raise SecurityError(f"{field} inválido: {cleaned!r} não é IPv6 nem hostname") from exc
+        _reject_if_reserved(cleaned, address)
+        return str(address)
     if len(cleaned) > 253:
         raise SecurityError(f"{field} muito longo")
     if not _DESTINATION_RE.match(cleaned):
         raise SecurityError(
             f"{field} inválido: {cleaned!r} contém caracteres não permitidos"
         )
+    try:
+        address = ipaddress.ip_address(cleaned)
+    except ValueError:
+        address = None
+    if address is not None:
+        _reject_if_reserved(cleaned, address)
     return cleaned
 
 

@@ -91,6 +91,30 @@ def test_run_rejects_injection(client) -> None:
     assert response.status_code == 400
 
 
+def test_run_rejects_reserved_range_with_alert(client) -> None:
+    response = client.post(
+        "/api/run",
+        json={"device": "r1", "command": "ping", "params": {"ip": "192.168.1.1"}},
+    )
+    assert response.status_code == 400
+    detail = response.json()["detail"]
+    assert detail["code"] == "reserved_range"
+    assert detail["meta"]["requested"] == "192.168.1.1"
+    assert detail["meta"]["rfc"] == "RFC 1918"
+    assert detail["meta"]["network"] == "192.168.0.0/16"
+    assert detail["meta"]["purpose"] == "Privado"
+    assert "faixa reservada" in detail["message"]
+
+
+def test_run_rejects_reserved_prefix(client) -> None:
+    response = client.post(
+        "/api/run",
+        json={"device": "r1", "command": "bgp-route", "params": {"prefix": "10.0.0.0/8"}},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "reserved_range"
+
+
 def test_run_success_builds_command(client, monkeypatch) -> None:
     captured = {}
     ping_output = (
