@@ -161,42 +161,6 @@
       }
     }
 
-    .hero-mark {
-      display: grid;
-      place-items: center;
-      width: 74px;
-      height: 74px;
-      border-radius: 22px;
-      color: var(--accent);
-      background:
-        linear-gradient(160deg, color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--accent2) 16%, transparent));
-      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
-      box-shadow: 0 10px 40px -12px var(--g-glow), inset 0 0 24px color-mix(in srgb, var(--accent) 20%, transparent);
-      animation: markBreath 3.6s ease-in-out infinite;
-    }
-
-    @keyframes markBreath {
-      0%,
-      100% {
-        box-shadow: 0 10px 40px -12px var(--g-glow), inset 0 0 24px color-mix(in srgb, var(--accent) 20%, transparent);
-        transform: scale(1);
-      }
-      50% {
-        box-shadow: 0 10px 48px -8px var(--g-glow), inset 0 0 36px color-mix(in srgb, var(--accent) 40%, transparent);
-        transform: scale(1.045);
-      }
-    }
-
-    .hero-mark:hover {
-      animation-play-state: paused;
-    }
-
-    .hero-mark .ic {
-      width: 40px;
-      height: 40px;
-      stroke-width: 1.6;
-    }
-
     h1 {
       font-size: clamp(1.7rem, 4vw, 2.4rem);
       font-weight: 800;
@@ -1399,11 +1363,6 @@
 
   <main>
     <header class="hero">
-      <div class="hero-mark">
-        <svg class="ic">
-          <use href="#i-route" />
-        </svg>
-      </div>
       <img id="logo" class="hidden" alt="logo">
       <h1 id="site-title">OpenGlass</h1>
       <p class="sub" id="subtitle"></p>
