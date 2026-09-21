@@ -55,14 +55,16 @@ prompts em modo texto, útil em automação):
    backup `.bak.<timestamp>` antes de sobrescrever), cria o `.env` do serviço
    e roda um teste do CLI.
 
-Como serviço web (systemd, no boot):
+Como serviço web (systemd, sobe no boot e é criado por padrão):
 
 ```bash
-sudo bash install.sh --service
+sudo bash install.sh
 ```
 
-O serviço roda com o usuário dedicado `openglass`; se o repositório estiver em
-área restrita (ex.: `/root/OpenGlass`), roda como root (aviso na instalação).
+O serviço `openglass` roda com o usuário dedicado `openglass` e lê a
+configuração de `/etc/openglass`; se o repositório estiver em área restrita
+(ex.: `/root/OpenGlass`), roda como root (aviso na instalação). Para não
+criar o serviço, use `--no-service`.
 
 Remover o serviço e os symlinks (mantém as configurações):
 

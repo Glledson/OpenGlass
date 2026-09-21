@@ -27,6 +27,7 @@
 #   sudo bash install.sh --uninstall     # remove serviço e symlinks
 #
 # Opções:
+#   --no-service      não cria/habilita o serviço systemd (padrão: cria)
 #   --no-apt           pula atualização/instalação de pacotes
 #   --no-uv            não instala o uv (reusa o existente)
 #   --no-symlinks      não cria symlinks em /usr/local/bin
@@ -37,6 +38,8 @@
 # A interface é TUI com whiptail (nativo em Debian/Ubuntu), do preparo do
 # ambiente (gauge de progresso) até os assistentes. Todo o output da
 # instalação é gravado em /root/openglass-install.log.
+# O serviço web sobe sozinho (systemd) ao final, usando a configuração de
+# $CONFIG_DIR; o uv fica no PATH via /etc/profile.d/openglass-uv.sh.
 # ---------------------------------------------------------------------------
 
 set -euo pipefail
@@ -51,7 +54,7 @@ REPO_DIR="$SELF_DIR"
 CONFIG_DIR="/etc/openglass"
 APT_LOG="/root/openglass-install.log"
 BANNER="OpenGlass — instalador"
-DO_SERVICE=0
+DO_SERVICE=1
 DO_UNINSTALL=0
 DO_APT=1
 DO_UV=1
@@ -126,8 +129,10 @@ OpenGlass — instalador interativo
 Uso:
   sudo bash install.sh [opções]
 
+O serviço systemd (openglass) é criado e habilitado automaticamente.
+
 Opções:
-  --service        cria e habilita a unit do systemd (serviço web)
+  --no-service     NÃO cria/habilita o serviço web (padrão: cria)
   --uninstall      remove a unit do systemd e os symlinks
   --no-apt         pula atualização/instalação de pacotes
   --no-uv          não instala o uv (reusa o existente)
@@ -141,6 +146,7 @@ EOF
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --service)        DO_SERVICE=1; shift ;;
+        --no-service)     DO_SERVICE=0; shift ;;
         --uninstall)      DO_UNINSTALL=1; shift ;;
         --no-apt)         DO_APT=0; shift ;;
         --no-uv)          DO_UV=0; shift ;;
@@ -862,14 +868,15 @@ PYENV
 # 10. .env apontando para a configuração
 # ---------------------------------------------------------------------------
 write_env() {
-    info "Gerando $REPO_DIR/.env …"
+    info "Gerando .env …"
     cat > "$REPO_DIR/.env" <<EOF
 INVENTORY_PATH=$DEVICES_FILE
 CONFIG_PATH=$CONFIG_FILE
 LOG_LEVEL=INFO
 DEBUG=false
 EOF
-    ok ".env gravado"
+    cp -f "$REPO_DIR/.env" "$CONFIG_DIR/.env"
+    ok ".env gravado ($REPO_DIR ve $CONFIG_DIR)"
 }
 
 # ---------------------------------------------------------------------------
@@ -923,7 +930,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 $( [ "$service_user" = "openglass" ] && printf 'User=%s\nGroup=%s\n' "$service_user" "$service_user" )
-WorkingDirectory=$REPO_DIR
+WorkingDirectory=$CONFIG_DIR
 ExecStart=$REPO_DIR/.venv/bin/openglass-web
 Restart=on-failure
 RestartSec=5
@@ -1004,10 +1011,10 @@ main() {
 
     if [ "$INSTALL_MODE" = "keep" ]; then
         show_msg "Concluído" \
-"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nConfiguração: mantida (não alterada)\n\nWeb (serviço) : systemctl start openglass  →  http://<ip>:8000\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
+"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nConfiguração: mantida (não alterada)\n\nWeb : http://<ip>:8000 (serviço openglass ativo)\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8"
     else
         show_msg "Concluído" \
-"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nAtivos      : ${#DEV_NAMES[@]} novo(s) em $DEVICES_FILE\n\nWeb (serviço) : systemctl start openglass  →  http://<ip>:8000\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
+"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nAtivos      : ${#DEV_NAMES[@]} novo(s) em $DEVICES_FILE\n\nWeb : http://<ip>:8000 (serviço openglass ativo)\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8"
     fi
 }
 
