@@ -1,30 +1,52 @@
-# OpenGlass
+<div align="center">
 
-Ferramenta web de diagnóstico de rede para roteadores de borda: escolha o
-roteador e o comando, e receba o resultado da análise em um cartão didático —
-com a saída bruta sempre disponível como referência.
+# 🔭 OpenGlass
 
-**Versão:** 1.1.0
+### Um looking glass de verdade — direto do terminal para um cartão que qualquer NOC entende
 
-## Funcionalidades
+*Escolha o roteador, escolha o comando, receba um diagnóstico legível — com a saída bruta sempre a um clique de distância.*
 
-- **Ping** — status Sucesso/Parcial/Falha, enviados/recebidos, perda, latência
-  (min/avg/max) e resposta sonda a sonda.
-- **Traceroute** — salto a salto com IP, AS e tempo de cada sonda, indicando se
-  o tráfego chegou ao destino.
-- **BGP (detalhe de prefixo)** — caminhos com AS path, next hop, origem,
-  localpref/metric/weight e flags, com destaque do melhor caminho.
-- **Execução segura** — whitelist de comandos por NOS, sanitização anti-injeção
-  e timeouts configuráveis.
-- **Interface web** (FastAPI + frontend estático, com logo/links/tema via
-  `openglass.yaml`) e **CLI** interativo/one-shot.
+**Versão 1.1.0** · Cisco IOS/IOS-XE hoje, mais vendors amanhã
 
-> **Suporte:** por enquanto apenas **Cisco IOS/IOS-XE**. Suporte a outras
-> vendors (Juniper, Mikrotik, etc.) está em desenvolvimento.
+</div>
 
-## Instalação
+---
 
-### Instalador (produção)
+## 🧩 O problema que o OpenGlass resolve
+
+Todo NOC já viveu isso: alguém precisa checar se um prefixo está anunciado
+certinho, ou se um salto específico está dando timeout, mas a única forma de
+saber é logar no roteador, digitar o comando e tentar interpretar uma saída
+que só faz sentido pra quem decora sintaxe de CLI havia anos.
+
+O **OpenGlass** tira essa fricção do caminho: um front-end simples entrega
+`ping`, `traceroute` e detalhe de prefixo BGP como cartões traduzidos —
+sucesso, parcial ou falha já resumidos — sem esconder o dado bruto de quem
+quiser conferir.
+
+---
+
+## ⚙️ O que ele faz
+
+| Comando | O que você vê |
+|---|---|
+| 🟢 **Ping** | Status (Sucesso/Parcial/Falha), enviados/recebidos, perda, latência min/avg/max e a resposta sonda a sonda |
+| 🛰️ **Traceroute** | Salto a salto com IP, AS e tempo de cada sonda, indicando se o tráfego realmente chegou ao destino |
+| 🌐 **BGP (detalhe de prefixo)** | Todos os caminhos com AS path, next hop, origem, localpref/metric/weight e flags — com o melhor caminho em destaque |
+
+Por trás dos cartões:
+
+- **Execução segura** — whitelist de comandos por NOS, sanitização anti-injeção e timeouts configuráveis
+- **Duas faces, um motor** — interface web (FastAPI + frontend estático, com logo/links/tema via `openglass.yaml`) e CLI interativa/one-shot
+
+> **Cobertura atual:** apenas **Cisco IOS/IOS-XE**. Suporte a outros vendors
+> (Juniper, MikroTik etc.) está em desenvolvimento.
+
+---
+
+## 🚀 Instalação
+
+### Via instalador (produção)
 
 ```bash
 git clone https://github.com/Glledson/OpenGlass.git
@@ -32,106 +54,103 @@ cd OpenGlass
 sudo bash install.sh
 ```
 
-O instalador é interativo (TUI com whiptail, do começo ao fim — com gauge de
-progresso nas fases longas). Sem terminal interativo, a interface cai para
-prompts em modo texto. Todo o output é gravado em `/root/openglass-install.log`.
+O instalador é uma TUI interativa (whiptail) do início ao fim, com barra de
+progresso nas fases mais longas. Sem terminal interativo, ele cai
+automaticamente para prompts em modo texto. Todo o log fica em
+`/root/openglass-install.log`.
 
-Fluxo do instalador:
+<details>
+<summary><strong>O que o instalador faz, passo a passo</strong></summary>
 
-1. verifica root, detecta o SO (Debian 11+/Ubuntu 20.04+) e atualiza o sistema;
-2. instala dependências (git, curl, python3, uv, whiptail) e cria a pasta
-   `/etc/openglass/`;
-3. usa o repositório **já baixado** (o próprio diretório onde o `install.sh`
-   está; não faz download novamente — use `-d DIR` se o clone estiver em outro
-   lugar);
-4. se já houver instalação (`/etc/openglass` com `openglass.yaml` e
-   `devices.yaml`), pergunta se deseja **usar os configs existentes** (pula os
-   wizards), **reconfigurar do zero**, **editar** (mantém ativos atuais) ou
-   cancelar;
-5. configura o **site** (ASN, nome do provedor, site e contato do NOC) com
-   validação em tempo real e tela de confirmação (**Confirmar/Corrigir/
-   Cancelar** — "Corrigir" volta com o formulário pré-preenchido);
-6. configura os **ativos** (roteadores: nome, vendor vindo de `nodes/`, IPv4,
-   source IPv4, comunidade SNMP, usuário/senha SSH e porta) com confirmação e
-   repetição;
-7. gera `/etc/openglass/openglass.yaml` e `/etc/openglass/devices.yaml` (com
-   backup `.bak.<timestamp>` antes de sobrescrever), cria o `.env` do serviço
-   e roda um teste do CLI.
+1. Verifica root, detecta o SO (Debian 11+/Ubuntu 20.04+) e atualiza o sistema
+2. Instala dependências (`git`, `curl`, `python3`, `uv`, `whiptail`) e cria `/etc/openglass/`
+3. Usa o repositório **já clonado** — o diretório onde o `install.sh` está — sem baixar de novo (use `-d DIR` se o clone estiver em outro lugar)
+4. Detecta instalação existente (`openglass.yaml` + `devices.yaml`) e pergunta: usar configs atuais, reconfigurar do zero, editar mantendo os ativos, ou cancelar
+5. Configura o **site** (ASN, nome do provedor, site, contato do NOC), com validação em tempo real e tela de **Confirmar / Corrigir / Cancelar**
+6. Configura os **ativos** — roteador por roteador: nome, vendor (lido de `nodes/`), IPv4, source IPv4, comunidade SNMP, usuário/senha SSH, porta — com confirmação e repetição para quantos ativos forem necessários
+7. Gera `/etc/openglass/openglass.yaml` e `/etc/openglass/devices.yaml` (com backup `.bak.<timestamp>` se já existirem), cria o `.env` do serviço e testa o CLI
 
-Como serviço web (systemd, sobe no boot e é criado por padrão):
+</details>
+
+Por padrão, sobe como **serviço systemd** (`openglass`), iniciando no boot,
+rodando sob o usuário dedicado `openglass` e lendo config de `/etc/openglass`.
+Se o repositório estiver em área restrita (ex: `/root/OpenGlass`), o serviço
+roda como root — o instalador avisa nesse caso.
 
 ```bash
-sudo bash install.sh
+sudo bash install.sh --no-service   # sem criar o serviço
+sudo bash install.sh --uninstall    # remove serviço e symlinks, preserva configs
 ```
 
-O serviço `openglass` roda com o usuário dedicado `openglass` e lê a
-configuração de `/etc/openglass`; se o repositório estiver em área restrita
-(ex.: `/root/OpenGlass`), roda como root (aviso na instalação). Para não
-criar o serviço, use `--no-service`.
+Outras flags: `--no-apt`, `--no-uv`, `--no-symlinks`, `-d DIR` (diretório do
+repo), `-c DIR` (diretório de config).
 
-Remover o serviço e os symlinks (mantém as configurações):
-
-```bash
-sudo bash install.sh --uninstall
-```
-
-Opções extras: `--no-apt` (pula atualização/instalação de pacotes), `--no-uv`,
-`--no-symlinks`, `--service`/`--no-service` (o serviço é o padrão), `-d DIR`
-(diretório do repositório), `-c DIR` (config).
-
-### Instalação manual (desenvolvimento)
+### Modo desenvolvimento (manual)
 
 ```bash
 uv sync
 cp .env.example .env                        # timeouts, se quiser ajustar
-cp openglass.yaml.example openglass.yaml    # ajuste org_name, primary_asn…
-cp devices.yaml.example devices.yaml        # preencha com seus roteadores
+cp openglass.yaml.example openglass.yaml    # org_name, primary_asn…
+cp devices.yaml.example devices.yaml        # seus roteadores
 ```
 
-## Uso
+---
+
+## 🖥️ Uso
 
 ```bash
-uv run python main.py --list-devices        # inventário
+uv run python main.py --list-devices        # inventário de roteadores
 uv run python main.py --list-commands       # comandos permitidos
 uv run python main.py                       # modo interativo
 uv run python main.py --device edge-r1 --command ping --param ip=8.8.8.8
 ```
 
-Web:
+Subindo a interface web:
 
 ```bash
-uv run openglass-web     # depois abra o endereço em http://localhost (ou o configurado)
+uv run openglass-web
+# abra http://localhost (ou o endereço configurado)
 ```
 
-Exit codes: `0` ok | `2` erro | `130` abortado.
+**Exit codes:** `0` sucesso · `2` erro · `130` abortado pelo usuário
 
-## Comandos e parsers
+---
 
-| comando      | exemplo                  | parser       |
-| ------------ | ------------------------ | ------------ |
-| `ping`       | `ping 8.8.8.8`           | `ping`       |
-| `traceroute` | `traceroute 1.1.1.1`     | `traceroute` |
-| `bgp-route`  | `show ip bgp 8.8.8.0/24` | `bgp_prefix` |
+## 🛠️ Comandos e parsers
 
-A origem do ping/traceroute é preenchida automaticamente com o `source_address`
-do VRF do roteador. Os comandos e parsers ficam em `nodes/cisco_ios.yaml`;
-novos NOS entram com um perfil por arquivo em `nodes/`.
+| Comando | Exemplo | Parser |
+|---|---|---|
+| `ping` | `ping 8.8.8.8` | `ping` |
+| `traceroute` | `traceroute 1.1.1.1` | `traceroute` |
+| `bgp-route` | `show ip bgp 8.8.8.0/24` | `bgp_prefix` |
 
-## Segurança
+A origem de ping/traceroute é preenchida automaticamente com o
+`source_address` do VRF do roteador. Comandos e parsers vivem em
+`nodes/cisco_ios.yaml` — cada novo NOS entra como um perfil próprio dentro de
+`nodes/`.
 
-- Apenas comandos da whitelist do NOS são aceitos (nada de `show running-config`).
-- Parâmetros validados (IP/prefixo/hostname) e caracteres de injeção rejeitados.
-- Timeouts de conexão/leitura protegem contra roteador que não responde.
+---
 
-## Testes
+## 🔒 Segurança em primeiro lugar
+
+- Somente comandos da whitelist do NOS são aceitos — nada de `show running-config` escapando pela brecha
+- Parâmetros validados (IP/prefixo/hostname); caracteres de injeção são rejeitados na porta
+- Timeouts de conexão e leitura protegem contra roteador que simplesmente não responde
+
+---
+
+## ✅ Testes
 
 ```bash
 uv run pytest
 ```
 
-**167 testes** (com Netmiko mockado e saídas reais de exemplo; sem dispositivo real).
+**167 testes**, com Netmiko mockado e saídas reais de exemplo — sem depender
+de dispositivo físico para validar a suíte.
 
-## Estrutura
+---
+
+## 📁 Estrutura do projeto
 
 ```
 nodes/<nos>.yaml        whitelist + templates por NOS
@@ -148,3 +167,11 @@ tests/                  suíte de testes (167)
 install.sh              instalador interativo (root: sudo bash install.sh)
 CHANGELOG.md            histórico de versões
 ```
+
+---
+
+<div align="center">
+
+*Feito para quem vive de plantão e não tem tempo a perder decifrando CLI.*
+
+</div>
