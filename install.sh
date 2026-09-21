@@ -34,7 +34,8 @@
 #                      diretório, onde o install.sh está)
 #   -c DIR             diretório de configuração (padrão /etc/openglass)
 #
-# A interface é TUI com whiptail (nativo em Debian/Ubuntu). Todo o output da
+# A interface é TUI com whiptail (nativo em Debian/Ubuntu), do preparo do
+# ambiente (gauge de progresso) até os assistentes. Todo o output da
 # instalação é gravado em /root/openglass-install.log.
 # ---------------------------------------------------------------------------
 
@@ -57,9 +58,9 @@ DO_UV=1
 DO_SYMLINKS=1
 PROMPT_EOF=0
 
-info()  { printf "${C_CYAN}%s${C_RESET}\n" "• $*"; }
-ok()    { printf "${C_GREEN}%s${C_RESET}\n" "✓ $*"; }
-warn()  { printf "${C_YELLOW}%s${C_RESET}\n" "⚠ $*" >&2; }
+info()  { if [ "${GAUGE_ACTIVE:-0}" = 1 ]; then printf "${C_CYAN}%s${C_RESET}\n" "• $*" >>"$APT_LOG"; else printf "${C_CYAN}%s${C_RESET}\n" "• $*"; fi; }
+ok()    { if [ "${GAUGE_ACTIVE:-0}" = 1 ]; then printf "${C_GREEN}%s${C_RESET}\n" "✓ $*" >>"$APT_LOG"; else printf "${C_GREEN}%s${C_RESET}\n" "✓ $*"; fi; }
+warn()  { if [ "${GAUGE_ACTIVE:-0}" = 1 ]; then printf "${C_YELLOW}%s${C_RESET}\n" "⚠ $*" >>"$APT_LOG"; else printf "${C_YELLOW}%s${C_RESET}\n" "⚠ $*" >&2; fi; }
 fail()  { printf "${C_RED}%s${C_RESET}\n" "✗ $*" >&2; exit 1; }
 
 _cleanup() {
@@ -73,7 +74,49 @@ _log_start() {
     : > "$APT_LOG"
     exec > >(tee -a "$APT_LOG") 2>&1
     info "log de instalação: $APT_LOG"
-    trap 'wait' EXIT
+    trap 'if [ "${GAUGE_ACTIVE:-0}" = 1 ]; then _gauge_close; fi; wait' EXIT
+}
+
+# ---------------------------------------------------------------------------
+# Gauge de progresso (whiptail) para as fases longas (apt, uv, sync) —
+# o whiptail aparece do início ao fim; só cai em texto se não houver binário.
+# ---------------------------------------------------------------------------
+GAUGE_ACTIVE=0
+GAUGE_FD=""
+GAUGE_PID=""
+GAUGE_PIPE=""
+GAUGE_PCT=0
+
+_gauge_open() { # $1=título  $2=msg inicial
+    [ "$USE_TUI" -eq 1 ] || return 1
+    GAUGE_ACTIVE=1
+    GAUGE_PCT=0
+    GAUGE_PIPE="$(mktemp -u /tmp/og-gauge.XXXXXX)"
+    mkfifo "$GAUGE_PIPE" || { GAUGE_ACTIVE=0; return 1; }
+    whiptail --backtitle "$BANNER" --title "$1" --gauge "$2" 7 70 0 <"$GAUGE_PIPE" \
+        >>"$APT_LOG" 2>&1 &
+    GAUGE_PID=$!
+    exec {GAUGE_FD}>"$GAUGE_PIPE"
+    printf '%s\n%s\n' "$GAUGE_PCT" "$2" >&"$GAUGE_FD"
+}
+
+_gauge_set() { # $1=percentual  $2=msg
+    [ "$GAUGE_ACTIVE" = 1 ] || return 0
+    GAUGE_PCT="$1"
+    printf '%s\n%s\n' "$1" "$2" >&"$GAUGE_FD"
+}
+
+_gauge_step() { # $1=incremento  $2=msg
+    [ "$GAUGE_ACTIVE" = 1 ] || return 0
+    _gauge_set $((GAUGE_PCT + "$1")) "$2"
+}
+
+_gauge_close() {
+    [ "$GAUGE_ACTIVE" = 1 ] || return 0
+    GAUGE_ACTIVE=0
+    exec {GAUGE_FD}>&-
+    wait "$GAUGE_PID" 2>/dev/null || true
+    rm -f "$GAUGE_PIPE"
 }
 
 usage() {
@@ -357,9 +400,11 @@ step_update() {
     [ "$DO_APT" -eq 1 ] || { warn "pulando atualização do sistema (--no-apt)"; return 0; }
     touch "$APT_LOG"
     info "Atualizando o sistema (apt update)…"
+    _gauge_set 15 "Atualizando o sistema (apt update)…"
     DEBIAN_FRONTEND=noninteractive apt-get update -y >>"$APT_LOG" 2>&1 \
         || fail "apt update falhou (veja $APT_LOG)"
     info "Atualizando o sistema (apt upgrade)…"
+    _gauge_set 30 "Atualizando o sistema (apt upgrade)…"
     DEBIAN_FRONTEND=noninteractive apt-get upgrade -y >>"$APT_LOG" 2>&1 \
         || fail "apt upgrade falhou (veja $APT_LOG)"
     ok "sistema atualizado (log: $APT_LOG)"
@@ -370,6 +415,7 @@ step_update() {
 # ---------------------------------------------------------------------------
 step_packages() {
     local missing=()
+    _gauge_set 40 "Verificando pacotes…"
     for pkg in git curl python3 python3-venv whiptail; do
         if dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
             ok "$pkg instalado"
@@ -381,6 +427,7 @@ step_packages() {
     if [ "${#missing[@]}" -gt 0 ]; then
         if [ "$DO_APT" -eq 1 ]; then
             info "Instalando: ${missing[*]}"
+            _gauge_set 50 "Instalando: ${missing[*]}…"
             DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}" >>"$APT_LOG" 2>&1 \
                 || fail "falha ao instalar pacotes (veja $APT_LOG)"
             ok "pacotes instalados"
@@ -397,10 +444,20 @@ step_uv() {
     else
         command -v curl >/dev/null 2>&1 || fail "curl é necessário para instalar o uv"
         info "Instalando uv em $HOME_BIN…"
+        _gauge_set 65 "Instalando o uv…"
         install -d "$HOME_BIN"
         curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null
         ok "uv instalado"
     fi
+    # Garante que o uv fique no PATH dos shells seguintes.
+    if [ -x "$UV_BIN" ] && [ -w /etc/profile.d ]; then
+        local profile="/etc/profile.d/openglass-uv.sh"
+        if [ ! -f "$profile" ] || ! grep -q "$HOME_BIN" "$profile"; then
+            printf 'export PATH="%s:$PATH"\n' "$HOME_BIN" > "$profile"
+            ok "uv adicionado ao PATH ($profile)"
+        fi
+    fi
+    _gauge_set 80 "Ambiente preparado"
 }
 
 # ---------------------------------------------------------------------------
@@ -460,11 +517,15 @@ e rode este install.sh de dentro do diretório baixado (ou use -d DIR)."
     fi
     ok "repositório encontrado"
     info "Instalando dependências (uv sync)…"
+    _gauge_open "OpenGlass — instalador" "Instalando dependências (uv sync)…"
+    _gauge_set 10 "uv sync — Resolvendo pacotes…"
     [ -x "$UV_BIN" ] || UV_BIN="$(command -v uv 2>/dev/null || true)"
     if [ -z "$UV_BIN" ]; then
+        _gauge_close
         fail "uv não encontrado — remova --no-uv ou instale o uv"
     fi
-    (cd "$REPO_DIR" && "$UV_BIN" sync)
+    (cd "$REPO_DIR" && "$UV_BIN" sync) && _gauge_set 100 "Dependências instaladas"
+    _gauge_close
     PYTHON_BIN="$REPO_DIR/.venv/bin/python"
     [ -x "$PYTHON_BIN" ] || PYTHON_BIN="$(command -v python3)"
     ok "dependências instaladas"
@@ -911,9 +972,11 @@ main() {
 
     step_root
     step_os
+    _gauge_open "OpenGlass — instalador" "Preparando o ambiente…"
     step_update
     step_packages
     step_uv
+    _gauge_close
     step_config_dir
     step_repo
     if [ "$INSTALL_MODE" = "keep" ]; then
@@ -941,10 +1004,10 @@ main() {
 
     if [ "$INSTALL_MODE" = "keep" ]; then
         show_msg "Concluído" \
-"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nConfiguração: mantida (não alterada)\n\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
+"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nConfiguração: mantida (não alterada)\n\nWeb (serviço) : systemctl start openglass  →  http://<ip>:8000\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
     else
         show_msg "Concluído" \
-"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nAtivos      : ${#DEV_NAMES[@]} novo(s) em $DEVICES_FILE\n\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
+"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nAtivos      : ${#DEV_NAMES[@]} novo(s) em $DEVICES_FILE\n\nWeb (serviço) : systemctl start openglass  →  http://<ip>:8000\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
     fi
 }
 
