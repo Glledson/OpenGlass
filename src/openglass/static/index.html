@@ -7,17 +7,24 @@
   <title>OpenGlass</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #e2e8f0;
+      --bg: #0b1020;
+      --card: #161c33;
+      --text: #e6ecff;
       --accent: #38bdf8;
-      --muted: color-mix(in srgb, var(--text) 62%, transparent);
-      --border: color-mix(in srgb, var(--text) 16%, transparent);
+      --accent2: #8b5cf6;
+      --accent3: #22d3ee;
+      --muted: color-mix(in srgb, var(--text) 60%, transparent);
+      --border: color-mix(in srgb, var(--text) 14%, transparent);
       --field: color-mix(in srgb, var(--bg) 55%, var(--card));
       --ok: #22c55e;
       --err: #f87171;
       --warn: #f59e0b;
-      --radius: 14px;
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --fg: var(--text);
+      --g-glow: color-mix(in srgb, var(--accent) 45%, transparent);
+      --shadow-soft: 0 24px 60px -28px rgba(0, 0, 0, .85);
     }
 
     * {
@@ -32,30 +39,105 @@
     body {
       min-height: 100vh;
       background:
-        radial-gradient(1100px 520px at 50% -12%,
-          color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+        radial-gradient(900px 520px at 12% -8%, color-mix(in srgb, var(--accent2) 22%, transparent), transparent 60%),
+        radial-gradient(1000px 560px at 88% -12%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 62%),
+        radial-gradient(760px 460px at 50% 115%, color-mix(in srgb, var(--accent2) 12%, transparent), transparent 65%),
         var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--sans);
       -webkit-font-smoothing: antialiased;
       display: flex;
       justify-content: center;
-      padding: 44px 18px 64px;
+      padding: 46px 18px 64px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* grade sutil de fundo */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(circle at 50% 20%, black, transparent 78%);
+      -webkit-mask-image: radial-gradient(circle at 50% 20%, black, transparent 78%);
+    }
+
+    /* orbes animados */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: -40%;
+      pointer-events: none;
+      background:
+        radial-gradient(420px 420px at 18% 22%, color-mix(in srgb, var(--accent3) 13%, transparent), transparent 60%),
+        radial-gradient(520px 520px at 82% 30%, color-mix(in srgb, var(--accent2) 14%, transparent), transparent 62%);
+      filter: blur(10px);
+      animation: drift 26s ease-in-out infinite alternate;
+      z-index: -1;
+    }
+
+    @keyframes drift {
+      from {
+        transform: translate3d(-2%, -1%, 0) rotate(0deg);
+      }
+      to {
+        transform: translate3d(3%, 2%, 0) rotate(6deg);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     main {
       width: 100%;
-      max-width: 880px;
+      max-width: 900px;
     }
 
-    /* ---------- Hero ---------- */
+    /* ────────────────────────── Ícones SVG ────────────────────────── */
+    .ic {
+      width: 1.15em;
+      height: 1.15em;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vertical-align: -0.18em;
+      flex: none;
+    }
+
+    .ic-sm {
+      width: .95em;
+      height: .95em;
+    }
+
+    .ic-lg {
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    /* ────────────────────────── Hero ────────────────────────── */
     header.hero {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 10px;
-      margin-bottom: 30px;
+      gap: 12px;
+      margin-bottom: 32px;
+      animation: fadeUp .5s ease both;
     }
 
     #logo {
@@ -63,45 +145,111 @@
       max-width: 510px;
       width: auto;
       height: auto;
-      filter: drop-shadow(0 100% 0px rgba(0, 0, 0, .45));
+      filter: drop-shadow(0 18px 40px rgba(0, 0, 0, .5));
+    }
+
+    .hero-mark {
+      display: grid;
+      place-items: center;
+      width: 74px;
+      height: 74px;
+      border-radius: 22px;
+      color: var(--accent);
+      background:
+        linear-gradient(160deg, color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--accent2) 16%, transparent));
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      box-shadow: 0 10px 40px -12px var(--g-glow), inset 0 0 24px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+
+    .hero-mark .ic {
+      width: 40px;
+      height: 40px;
+      stroke-width: 1.6;
     }
 
     h1 {
-      font-size: 2rem;
-      font-weight: 750;
-      letter-spacing: -0.025em;
+      font-size: clamp(1.7rem, 4vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
       margin: 0;
-    }
-
-    h1 span {
-      color: var(--accent);
+      background: linear-gradient(92deg, var(--text) 10%, var(--accent) 55%, var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .sub {
       color: var(--muted);
       margin: 0;
       font-size: .95rem;
+      max-width: 560px;
+      line-height: 1.55;
     }
 
-    /* ---------- Card ---------- */
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: .74rem;
+      font-weight: 650;
+      letter-spacing: .04em;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--card) 70%, transparent);
+    }
+
+    .pill .ic {
+      color: var(--accent);
+    }
+
+    /* ────────────────────────── Card ────────────────────────── */
     .card {
-      background: var(--card);
+      background: color-mix(in srgb, var(--card) 86%, transparent);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: 0 20px 45px -22px rgba(0, 0, 0, .75);
+      padding: 26px;
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      position: relative;
+      animation: fadeUp .55s .08s ease both;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 45%, transparent), transparent 40%, color-mix(in srgb, var(--accent2) 35%, transparent));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
     }
 
     .form {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 18px;
     }
 
     .field {
       display: flex;
       flex-direction: column;
       min-width: 0;
+      gap: 7px;
     }
 
     .field.full {
@@ -110,30 +258,47 @@
 
     label {
       font-size: .72rem;
-      font-weight: 650;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .08em;
+      letter-spacing: .09em;
       color: var(--muted);
-      margin-bottom: 7px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    label .ic {
+      color: var(--accent);
     }
 
     select,
     input {
       width: 100%;
-      padding: 11px 13px;
-      border-radius: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
       border: 1px solid var(--border);
       background: var(--field);
       color: var(--text);
       font-size: .95rem;
-      transition: border-color .15s, box-shadow .15s;
+      font-family: inherit;
+      transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 38px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7ba3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6l4 4 4-4'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
     }
 
     select:focus,
     input:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent);
     }
 
     input:disabled {
@@ -147,19 +312,27 @@
       align-items: center;
       justify-content: center;
       gap: 9px;
-      padding: 13px 16px;
+      padding: 14px 16px;
       border: none;
-      border-radius: 10px;
-      background: var(--accent);
-      color: #05263a;
+      border-radius: 12px;
+      color: #04121e;
       font-size: 1rem;
-      font-weight: 750;
+      font-weight: 800;
       cursor: pointer;
-      transition: filter .15s, transform .05s;
+      background: linear-gradient(95deg, var(--accent3), var(--accent) 55%, var(--accent2));
+      background-size: 200% 100%;
+      transition: background-position .3s, filter .18s, transform .06s, box-shadow .25s;
+      box-shadow: 0 12px 34px -14px var(--g-glow);
+    }
+
+    button#run .ic {
+      stroke-width: 2.4;
     }
 
     button#run:hover:not(:disabled) {
+      background-position: 100% 0;
       filter: brightness(1.06);
+      box-shadow: 0 16px 42px -14px color-mix(in srgb, var(--accent) 60%, transparent);
     }
 
     button#run:active:not(:disabled) {
@@ -167,15 +340,15 @@
     }
 
     button#run:disabled {
-      opacity: .55;
+      opacity: .6;
       cursor: not-allowed;
     }
 
     .spinner {
       width: 16px;
       height: 16px;
-      border: 2px solid rgba(5, 38, 58, .35);
-      border-top-color: #05263a;
+      border: 2px solid rgba(4, 18, 30, .3);
+      border-top-color: #04121e;
       border-radius: 50%;
       animation: spin .7s linear infinite;
     }
@@ -186,56 +359,86 @@
       }
     }
 
-    /* ---------- Status ---------- */
+    /* ────────────────────────── Status ────────────────────────── */
     #status {
       min-height: 20px;
-      margin-top: 16px;
+      margin-top: 18px;
       font-size: .87rem;
       color: var(--muted);
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    #status::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      margin-top: 6px;
+      flex: none;
+    }
+
+    #status:empty::before {
+      display: none;
     }
 
     #status.err {
       color: var(--err);
     }
 
+    #status.err::before {
+      background: var(--err);
+    }
+
     #status.ok {
       color: var(--ok);
     }
 
+    #status.ok::before {
+      background: var(--ok);
+    }
+
     #status code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-family: var(--mono);
       color: var(--accent);
     }
 
     #status.reserved {
-      border: 1px solid color-mix(in srgb, var(--err) 45%, transparent);
-      background: color-mix(in srgb, var(--err) 8%, transparent);
-      border-radius: 10px;
-      padding: 12px 14px;
-      color: var(--fg);
+      display: block;
+      border: 1px solid color-mix(in srgb, var(--err) 50%, transparent);
+      background: color-mix(in srgb, var(--err) 9%, transparent);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    #status.reserved::before {
+      display: none;
     }
 
     .rfc-alert-title {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-weight: 700;
+      font-weight: 750;
       color: var(--err);
     }
 
-    .rfc-alert-title::before {
-      content: "⚠";
+    .rfc-alert-title .ic {
+      color: var(--err);
     }
 
     .rfc-alert-value {
-      margin-top: 5px;
+      margin-top: 6px;
       font-family: var(--mono);
       font-weight: 700;
       word-break: break-all;
     }
 
     .rfc-alert-meta {
-      margin-top: 9px;
+      margin-top: 10px;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
@@ -256,20 +459,22 @@
       color: var(--accent);
     }
 
-    /* ---------- Resultado (terminal) ---------- */
+    /* ────────────────────────── Resultado ────────────────────────── */
     .result {
-      margin-top: 20px;
+      margin-top: 22px;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
       background: color-mix(in srgb, var(--bg) 82%, black);
+      box-shadow: var(--shadow-soft);
+      animation: fadeUp .45s ease both;
     }
 
     .result-head {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 10px 14px;
+      padding: 11px 15px;
       background: color-mix(in srgb, var(--text) 6%, transparent);
       border-bottom: 1px solid var(--border);
     }
@@ -286,29 +491,49 @@
       background: var(--border);
     }
 
+    .dots i:nth-child(1) {
+      background: var(--err);
+    }
+
+    .dots i:nth-child(2) {
+      background: var(--warn);
+    }
+
+    .dots i:nth-child(3) {
+      background: var(--ok);
+    }
+
     .result-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
       font-size: .74rem;
-      font-weight: 650;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .07em;
+      letter-spacing: .08em;
       color: var(--muted);
       margin-right: auto;
     }
 
     #copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--muted);
+      font: inherit;
       font-size: .76rem;
       padding: 5px 10px;
-      border-radius: 7px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: color .15s, border-color .15s;
+      transition: color .15s, border-color .15s, background .15s;
     }
 
     #copy:hover {
       color: var(--accent);
       border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
     }
 
     pre#output {
@@ -316,49 +541,53 @@
       padding: 16px 18px;
       max-height: 480px;
       overflow: auto;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: var(--mono);
       font-size: .82rem;
-      line-height: 1.5;
+      line-height: 1.55;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    /* ---------- Saída bruta (recolhível) ---------- */
+    /* ────────────────────────── Saída bruta ────────────────────────── */
     details.raw {
       border-top: 1px solid var(--border);
     }
 
     details.raw>summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       cursor: pointer;
       list-style: none;
-      padding: 11px 16px;
+      padding: 12px 16px;
       font-size: .74rem;
-      font-weight: 650;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .06em;
+      letter-spacing: .07em;
       color: var(--muted);
       user-select: none;
+      transition: color .15s;
     }
 
     details.raw>summary::-webkit-details-marker {
       display: none;
     }
 
-    details.raw>summary::before {
-      content: "▸ ";
+    details.raw>summary .chev {
+      transition: transform .18s;
     }
 
-    details.raw[open]>summary::before {
-      content: "▾ ";
+    details.raw[open]>summary .chev {
+      transform: rotate(90deg);
     }
 
     details.raw>summary:hover {
       color: var(--accent);
     }
 
-    /* ---------- Resultado tratado (ping) ---------- */
+    /* ────────────────────────── Resultado tratado (ping) ────────────────────────── */
     .parsed {
-      padding: 18px;
+      padding: 20px;
     }
 
     .ping-head {
@@ -383,24 +612,29 @@
 
     .badge.success {
       color: #052e16;
-      background: var(--ok);
+      background: color-mix(in srgb, var(--ok) 92%, white);
+      box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--ok) 80%, transparent);
     }
 
     .badge.partial {
       color: #3b2500;
-      background: var(--warn);
+      background: color-mix(in srgb, var(--warn) 90%, white);
+      box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--warn) 80%, transparent);
     }
 
     .badge.failed {
       color: #450a0a;
-      background: var(--err);
+      background: color-mix(in srgb, var(--err) 88%, white);
+      box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--err) 80%, transparent);
     }
 
     .ping-pct {
-      font-size: 1.65rem;
-      font-weight: 750;
+      font-size: 1.7rem;
+      font-weight: 800;
       letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
+      display: flex;
+      align-items: baseline;
     }
 
     .ping-pct span {
@@ -416,6 +650,7 @@
       flex-wrap: wrap;
       gap: 10px 36px;
       margin: 0 0 16px;
+      padding: 0;
     }
 
     .ping-meta div {
@@ -433,7 +668,7 @@
 
     .ping-meta dd {
       margin: 0;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: var(--mono);
       font-size: .95rem;
     }
 
@@ -445,32 +680,37 @@
     }
 
     .probe {
-      width: 30px;
-      height: 30px;
-      border-radius: 9px;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-weight: 750;
       font-size: .9rem;
       border: 1px solid var(--border);
+      transition: transform .12s;
+    }
+
+    .probe:hover {
+      transform: translateY(-2px);
     }
 
     .probe.reply {
       color: #052e16;
-      background: color-mix(in srgb, var(--ok) 85%, transparent);
+      background: color-mix(in srgb, var(--ok) 85%, white);
       border-color: transparent;
     }
 
     .probe.timeout {
       color: #450a0a;
-      background: color-mix(in srgb, var(--err) 80%, transparent);
+      background: color-mix(in srgb, var(--err) 80%, white);
       border-color: transparent;
     }
 
     .probe.warn {
       color: #3b2500;
-      background: color-mix(in srgb, var(--warn) 82%, transparent);
+      background: color-mix(in srgb, var(--warn) 82%, white);
       border-color: transparent;
     }
 
@@ -482,19 +722,27 @@
     }
 
     .stat {
-      background: var(--field);
+      background: color-mix(in srgb, var(--field) 85%, transparent);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
+      border-radius: 12px;
+      padding: 11px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
     }
 
     .stat span {
-      display: block;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       font-size: .64rem;
       text-transform: uppercase;
       letter-spacing: .07em;
       color: var(--muted);
-      margin-bottom: 4px;
+    }
+
+    .stat span .ic {
+      color: var(--accent);
     }
 
     .stat strong {
@@ -505,7 +753,7 @@
     .rtt h4 {
       margin: 0 0 10px;
       font-size: .7rem;
-      font-weight: 650;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .08em;
       color: var(--muted);
@@ -513,7 +761,7 @@
 
     .rtt-row {
       display: grid;
-      grid-template-columns: 46px 1fr auto;
+      grid-template-columns: 52px 1fr auto;
       align-items: center;
       gap: 10px;
       margin-bottom: 7px;
@@ -535,8 +783,7 @@
       display: block;
       height: 100%;
       border-radius: 99px;
-      background: linear-gradient(90deg, var(--accent),
-          color-mix(in srgb, var(--accent) 55%, var(--ok)));
+      background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--ok)));
     }
 
     .rtt-row b {
@@ -545,11 +792,11 @@
 
     .rtt-empty {
       color: var(--muted);
-      font-size: .85rem;
+      font-size: .86rem;
       margin: 0;
     }
 
-    /* ---------- Detalhe de prefixo BGP ---------- */
+    /* ────────────────────────── Detalhe de prefixo BGP ────────────────────────── */
     .bgp-head {
       display: flex;
       align-items: flex-start;
@@ -557,75 +804,149 @@
       gap: 12px;
       margin-bottom: 16px;
     }
-    .bgp-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+    .bgp-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
     .bgp-prefix {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-family: var(--mono);
       font-size: 1.35rem;
-      font-weight: 700;
+      font-weight: 750;
       letter-spacing: -0.01em;
     }
-    .bgp-sub { font-size: .8rem; color: var(--muted); }
+
+    .bgp-prefix .ic {
+      color: var(--accent);
+    }
+
+    .bgp-sub {
+      font-size: .8rem;
+      color: var(--muted);
+    }
+
     .path-count {
       flex-shrink: 0;
-      padding: 6px 12px;
+      padding: 6px 13px;
       border-radius: 999px;
       border: 1px solid var(--border);
       background: var(--field);
       font-size: .76rem;
       font-weight: 700;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
+
+    .path-count .ic {
+      color: var(--accent);
+    }
+
     .path-more {
-      margin: 16px 0 10px;
+      margin: 18px 0 10px;
       font-size: .7rem;
       text-transform: uppercase;
-      letter-spacing: .08em;
+      letter-spacing: .09em;
       color: var(--muted);
     }
+
     .path-card {
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      background: var(--field);
+      border-radius: 14px;
+      padding: 15px 17px;
+      background: color-mix(in srgb, var(--field) 85%, transparent);
+      transition: transform .15s, border-color .15s, box-shadow .2s;
     }
-    .path-card + .path-card { margin-top: 12px; }
+
+    .path-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px -18px rgba(0, 0, 0, .7);
+    }
+
+    .path-card+.path-card {
+      margin-top: 12px;
+    }
+
     .path-card.best {
       border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
       background: color-mix(in srgb, var(--ok) 9%, var(--field));
+      box-shadow: 0 12px 30px -18px color-mix(in srgb, var(--ok) 55%, transparent);
     }
+
     .path-head {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: .82rem;
-      font-weight: 700;
+      font-size: .84rem;
+      font-weight: 750;
       margin-bottom: 12px;
     }
-    .path-card.best .path-head { color: var(--ok); }
-    .path-star { font-size: 1rem; }
+
+    .path-card.best .path-head {
+      color: var(--ok);
+    }
+
+    .path-star .ic {
+      fill: var(--ok);
+      stroke: var(--ok);
+    }
+
     .path-idx {
       margin-left: auto;
       font-size: .72rem;
       font-weight: 650;
       color: var(--muted);
     }
+
     .path-attrs {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 10px 22px;
       margin: 0 0 12px;
     }
-    .path-attrs div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+
+    .path-attrs div {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
     .path-attrs dt {
       font-size: .64rem;
       text-transform: uppercase;
       letter-spacing: .07em;
       color: var(--muted);
     }
-    .path-attrs dd { margin: 0; font-size: .88rem; word-break: break-word; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .muted { color: var(--muted); font-size: .82rem; }
-    .flags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .path-attrs dd {
+      margin: 0;
+      font-size: .88rem;
+      word-break: break-word;
+    }
+
+    .mono {
+      font-family: var(--mono);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .flags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
     .flag {
       font-size: .68rem;
       font-weight: 650;
@@ -634,17 +955,25 @@
       border: 1px solid var(--border);
       color: var(--muted);
     }
-    .flag-ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
-    .flag-bad { color: var(--err); border-color: color-mix(in srgb, var(--err) 45%, transparent); }
 
-    /* ---------- Traceroute ---------- */
-    .tr { }
+    .flag-ok {
+      color: var(--ok);
+      border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+    }
+
+    .flag-bad {
+      color: var(--err);
+      border-color: color-mix(in srgb, var(--err) 45%, transparent);
+    }
+
+    /* ────────────────────────── Traceroute ────────────────────────── */
     .tr-head {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
       gap: 10px 16px;
     }
+
     .tr-dest {
       display: flex;
       align-items: baseline;
@@ -655,20 +984,41 @@
       color: var(--fg);
       word-break: break-all;
     }
-    .tr-dest span { font-family: var(--sans); font-weight: 400; font-size: .78rem; color: var(--muted); }
+
+    .tr-dest .ic {
+      align-self: center;
+      color: var(--accent);
+    }
+
+    .tr-dest span {
+      font-family: var(--sans);
+      font-weight: 400;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
     .tr-hops {
       font-size: .82rem;
       color: var(--muted);
       border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 3px 10px;
+      padding: 3px 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
+
+    .tr-hops .ic {
+      color: var(--accent);
+    }
+
     .tr-hops-list {
       display: flex;
       flex-direction: column;
       margin-top: 16px;
       gap: 6px;
     }
+
     .tr-hop {
       display: flex;
       align-items: center;
@@ -676,59 +1026,110 @@
       gap: 4px 10px;
       padding: 8px 12px;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--card);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--card) 85%, transparent);
+      transition: transform .13s, border-color .15s;
     }
+
+    .tr-hop:hover {
+      transform: translateX(2px);
+    }
+
     .tr-hop.last {
       border-color: color-mix(in srgb, var(--ok) 45%, transparent);
     }
+
     .tr-idx {
-      width: 26px;
-      height: 26px;
+      width: 27px;
+      height: 27px;
       display: grid;
       place-items: center;
       border-radius: 50%;
-      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
       color: var(--accent);
       font-size: .82rem;
-      font-weight: 700;
+      font-weight: 750;
       flex: none;
+      border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
     }
-    .tr-ip { font-size: .9rem; word-break: break-all; }
+
+    .tr-hop.last .tr-idx {
+      color: var(--ok);
+      background: color-mix(in srgb, var(--ok) 15%, transparent);
+      border-color: color-mix(in srgb, var(--ok) 25%, transparent);
+    }
+
+    .tr-ip {
+      font-size: .9rem;
+      word-break: break-all;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tr-ip .ic {
+      color: var(--muted);
+      font-size: 1em;
+    }
+
     .tr-asn {
       font-size: .72rem;
       color: var(--accent);
       border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
       border-radius: 999px;
-      padding: 2px 8px;
+      padding: 2px 9px;
     }
-    .tr-probes { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+
+    .tr-probes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-left: auto;
+    }
+
     .tr-probe {
       font-size: .74rem;
       border-radius: 6px;
-      padding: 2px 6px;
-      background: var(--bg);
+      padding: 2px 7px;
+      background: color-mix(in srgb, var(--bg) 60%, transparent);
       border: 1px solid var(--border);
     }
-    .tr-probe.tr-ok { color: var(--ok); }
-    .tr-probe.tr-timeout { color: var(--muted); }
-    .tr-probe.tr-err { color: var(--err); }
+
+    .tr-probe.tr-ok {
+      color: var(--ok);
+    }
+
+    .tr-probe.tr-timeout {
+      color: var(--muted);
+    }
+
+    .tr-probe.tr-err {
+      color: var(--err);
+    }
+
     .tr-avg {
       font-size: .78rem;
       color: var(--fg);
       border-left: 1px solid var(--border);
       padding-left: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
-    .tr-avg.muted { color: var(--muted); }
 
-    /* ---------- Rodapé / links ---------- */
+    .tr-avg.muted {
+      color: var(--muted);
+    }
+
+    /* ────────────────────────── Rodapé / links ────────────────────────── */
     nav#links {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
       gap: 8px 14px;
-      margin-top: 30px;
+      margin-top: 34px;
+      animation: fadeUp .5s .16s ease both;
     }
 
     nav#links a,
@@ -738,7 +1139,7 @@
       border: none;
       padding: 0;
       font: inherit;
-      font-size: .82rem;
+      font-size: .84rem;
       text-decoration: none;
       cursor: pointer;
       transition: color .15s;
@@ -760,14 +1161,15 @@
 
     .menu-panel {
       margin-top: 12px;
-      background: var(--card);
+      background: color-mix(in srgb, var(--card) 86%, transparent);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 16px;
+      border-radius: 14px;
+      padding: 15px 17px;
       font-size: .88rem;
       line-height: 1.55;
       white-space: pre-wrap;
       color: var(--text);
+      backdrop-filter: blur(10px);
     }
 
     .menu-panel h3 {
@@ -779,7 +1181,7 @@
     }
 
     footer.foot {
-      margin-top: 26px;
+      margin-top: 28px;
       text-align: center;
       color: var(--muted);
       font-size: .78rem;
@@ -787,6 +1189,32 @@
 
     .hidden {
       display: none !important;
+    }
+
+    /* scrollbars */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--text) 18%, transparent);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    }
+
+    pre#output::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--text) 14%, transparent);
+      background-clip: content-box;
+    }
+
+    ::selection {
+      background: color-mix(in srgb, var(--accent) 35%, transparent);
     }
 
     @media (max-width: 620px) {
@@ -809,37 +1237,157 @@
       .ping-pct {
         font-size: 1.3rem;
       }
+
+      .card {
+        padding: 20px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
     }
   </style>
 </head>
 
 <body>
+  <!-- Sprite de ícones SVG -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-router" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="12" rx="2.5"/>
+        <circle cx="7" cy="9" r="1"/>
+        <circle cx="12" cy="9" r="1"/>
+        <circle cx="17" cy="9" r="1"/>
+        <path d="M9 15c-.6 1.4-1.4 2.6-2 3m12-3c.6 1.4 1.4 2.6 2 3M6 18.5h12"/>
+      </symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="16" rx="2.5"/>
+        <path d="M7 9l3 3-3 3"/>
+        <path d="M12.5 15H17"/>
+      </symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24">
+        <path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12.5L13 2z"/>
+      </symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24">
+        <rect x="9" y="9" width="11" height="11" rx="2.5"/>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </symbol>
+      <symbol id="i-target" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <circle cx="12" cy="12" r="4.5"/>
+        <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+      </symbol>
+      <symbol id="i-ping" viewBox="0 0 24 24">
+        <path d="M2 12h3.5l2.2-6 4 12 2.2-6H22"/>
+      </symbol>
+      <symbol id="i-traceroute" viewBox="0 0 24 24">
+        <circle cx="5" cy="19" r="2.3"/>
+        <circle cx="12" cy="12" r="2.3"/>
+        <circle cx="19" cy="5" r="2.3"/>
+        <path d="M6.6 17.4l3.4-4M14 10.6l3.4-4"/>
+      </symbol>
+      <symbol id="i-route" viewBox="0 0 24 24">
+        <circle cx="5" cy="12" r="2.8"/>
+        <circle cx="19" cy="12" r="2.8"/>
+        <path d="M7.8 10.2L12 6.5l4.2 3.7"/>
+        <path d="M7.8 13.8L12 17.5l4.2-3.7"/>
+      </symbol>
+      <symbol id="i-star" viewBox="0 0 24 24">
+        <path d="M12 3l2.5 5.4 5.9.7-4.4 4 1.2 5.8-5.2-3-5.2 3 1.2-5.8-4.4-4 5.9-.7L12 3z"/>
+      </symbol>
+      <symbol id="i-dest" viewBox="0 0 24 24">
+        <path d="M12 21c4-4.5 7-8 7-11.5A7 7 0 0 0 5 9.5C5 13 8 16.5 12 21z"/>
+        <circle cx="12" cy="9.5" r="2.4"/>
+      </symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M3 12h18"/>
+        <path d="M12 3c2.6 2.6 3.9 5.7 3.9 9s-1.3 6.4-3.9 9c-2.6-2.6-3.9-5.7-3.9-9S9.4 5.6 12 3z"/>
+      </symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24">
+        <path d="M12 3l7 2.6v5c0 4.4-2.9 8-7 10.4C7.9 18.6 5 15 5 10.6v-5L12 3z"/>
+        <path d="M12 9v4"/>
+        <circle cx="12" cy="15.5" r=".7" fill="currentColor" stroke="none"/>
+      </symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24">
+        <rect x="5" y="10.5" width="14" height="9.5" rx="2"/>
+        <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>
+        <circle cx="12" cy="15.2" r="1.2" fill="currentColor" stroke="none"/>
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <path d="M4 12.5l5 5L20 6.5"/>
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 24 24">
+        <path d="M6 6l12 12M18 6L6 18"/>
+      </symbol>
+      <symbol id="i-warn" viewBox="0 0 24 24">
+        <path d="M12 4L2.8 19.5h18.4L12 4z"/>
+        <path d="M12 10v4.5"/>
+        <circle cx="12" cy="16.8" r=".7" fill="currentColor" stroke="none"/>
+      </symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 7v5l3 2"/>
+      </symbol>
+      <symbol id="i-hop" viewBox="0 0 24 24">
+        <path d="M4 12h10"/>
+        <path d="M14 8l4 4-4 4"/>
+        <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/>
+      </symbol>
+      <symbol id="i-chev" viewBox="0 0 24 24">
+        <path d="M9 6l6 6-6 6"/>
+      </symbol>
+      <symbol id="i-flag" viewBox="0 0 24 24">
+        <path d="M4 21V3"/>
+        <path d="M4 3h13.5l-2.4 4 2.4 4H4"/>
+      </symbol>
+      <symbol id="i-info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 10.8V16"/>
+        <circle cx="12" cy="7.8" r=".8" fill="currentColor" stroke="none"/>
+      </symbol>
+    </defs>
+  </svg>
+
   <main>
     <header class="hero">
+      <div class="hero-mark">
+        <svg class="ic"><use href="#i-route"/></svg>
+      </div>
       <img id="logo" class="hidden" alt="logo">
       <h1 id="site-title">OpenGlass</h1>
       <p class="sub" id="subtitle"></p>
+      <div class="hero-pills">
+        <span class="pill"><svg class="ic ic-sm"><use href="#i-shield"/></svg> Comandos em whitelist</span>
+        <span class="pill"><svg class="ic ic-sm"><use href="#i-lock"/></svg> Análise na hora</span>
+      </div>
     </header>
 
     <section class="card">
       <form class="form" id="query-form">
         <div class="field">
-          <label for="device">Roteador</label>
+          <label for="device"><svg class="ic ic-sm"><use href="#i-router"/></svg> Roteador</label>
           <select id="device"></select>
         </div>
 
         <div class="field">
-          <label for="command">Comando</label>
+          <label for="command"><svg class="ic ic-sm"><use href="#i-terminal"/></svg> Comando</label>
           <select id="command"></select>
         </div>
 
         <div class="field full" id="param-field">
-          <label for="param" id="param-label">IP</label>
+          <label for="param" id="param-label"><svg class="ic ic-sm"><use href="#i-target"/></svg> IP</label>
           <input id="param" type="text" placeholder="8.8.8.8" autocomplete="off">
         </div>
 
         <button id="run" type="submit">
           <span class="spinner hidden" id="spinner"></span>
+          <svg class="ic"><use href="#i-bolt"/></svg>
           <span id="run-label">Executar</span>
         </button>
       </form>
@@ -849,12 +1397,16 @@
     <section class="result hidden" id="result">
       <div class="result-head">
         <span class="dots"><i></i><i></i><i></i></span>
-        <span class="result-title">Resultado</span>
-        <button id="copy" type="button">Copiar</button>
+        <span class="result-title"><svg class="ic ic-sm"><use href="#i-terminal"/></svg> Resultado</span>
+        <button id="copy" type="button"><svg class="ic ic-sm"><use href="#i-copy"/></svg> Copiar</button>
       </div>
       <div id="parsed" class="parsed hidden"></div>
       <details class="raw" id="raw">
-        <summary>Ver saída bruta</summary>
+        <summary>
+          <svg class="ic ic-sm chev"><use href="#i-chev"/></svg>
+          <svg class="ic ic-sm"><use href="#i-terminal"/></svg>
+          Ver saída bruta
+        </summary>
         <pre id="output"></pre>
       </details>
     </section>
@@ -887,6 +1439,11 @@
     const $menus = document.getElementById("menus");
     const $foot = document.getElementById("foot");
 
+    // Ícone inline: I("i-check", "ic ic-sm")
+    function I(id, cls = "ic") {
+      return `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+    }
+
     const LABELS = { destination: "IP", ip: "IP", prefix: "Prefixo", hostname: "Host" };
     let commands = [];
 
@@ -912,7 +1469,7 @@
     function rfcAlertHtml(meta) {
       const m = meta || {};
       return `
-        <div class="rfc-alert-title">Consulta bloqueada — destino em faixa reservada</div>
+        <div class="rfc-alert-title">${I("i-shield")} Consulta bloqueada — destino em faixa reservada</div>
         <div class="rfc-alert-value">${esc(m.requested)}</div>
         <div class="rfc-alert-meta">
           <span class="rfc-card"><b>${esc(m.rfc)}</b></span>
@@ -973,11 +1530,11 @@
       const menus = site.menus || [];
       const parts = ['<span class="sep">|</span>'];
       links.forEach((l, i) => {
-        parts.push(`<a href="${l.url}" target="_blank" rel="noopener">${l.title}</a>`);
+        parts.push(`<a href="${l.url}" target="_blank" rel="noopener">${I("i-flag", "ic ic-sm")}${l.title}</a>`);
         if (i < links.length - 1) parts.push('<span class="sep">·</span>');
       });
       const menuButtons = menus
-        .map((m, i) => `<button type="button" data-menu="${i}">${m.title}</button>`)
+        .map((m, i) => `<button type="button" data-menu="${i}">${I("i-info", "ic ic-sm")}${m.title}</button>`)
         .join('<span class="sep">·</span>');
       $links.innerHTML = parts.join(" ") + (menus.length ? ` <span class="sep">|</span> ${menuButtons}` : "");
 
@@ -1014,13 +1571,13 @@
     function renderParamField() {
       const param = currentParam();
       if (!param) {
-        $paramLabel.textContent = "IP";
+        $paramLabel.innerHTML = `${I("i-target", "ic ic-sm")} IP`;
         $param.placeholder = "este comando não usa parâmetro";
         $param.value = "";
         $param.disabled = true;
         return;
       }
-      $paramLabel.textContent = LABELS[param.type] || param.name;
+      $paramLabel.innerHTML = `${I("i-target", "ic ic-sm")} ${LABELS[param.type] || param.name}`;
       $param.placeholder = param.type === "prefix" ? "8.8.8.0/24" : "8.8.8.8";
       $param.disabled = false;
     }
@@ -1058,9 +1615,9 @@
     }
 
     const PROBE_STYLE = {
-      reply: { cls: "reply", glyph: "✓" },
-      timeout: { cls: "timeout", glyph: "✕" },
-      unreachable: { cls: "warn", glyph: "⚠" },
+      reply: { cls: "reply", icon: "i-check" },
+      timeout: { cls: "timeout", icon: "i-x" },
+      unreachable: { cls: "warn", icon: "i-warn" },
     };
 
     function esc(value) {
@@ -1070,15 +1627,15 @@
     }
 
     function probeChip(probe) {
-      const style = PROBE_STYLE[probe.result] || { cls: "warn", glyph: "•" };
-      return `<span class="probe ${style.cls}" title="${esc(probe.label)}">${style.glyph}</span>`;
+      const style = PROBE_STYLE[probe.result] || { cls: "warn", icon: "i-warn" };
+      return `<span class="probe ${style.cls}" title="${esc(probe.label)}">${I(style.icon)}</span>`;
     }
 
     function pingCard(p) {
       const badges = {
-        success: ["success", "✓ Sucesso"],
-        partial: ["partial", "⚠ Parcial"],
-        failed: ["failed", "✗ Falha"],
+        success: ["success", `${I("i-check")} Sucesso`],
+        partial: ["partial", `${I("i-warn")} Parcial`],
+        failed: ["failed", `${I("i-x")} Falha`],
       };
       const [badgeCls, badgeText] = badges[p.status] || ["partial", esc(p.status)];
 
@@ -1098,10 +1655,13 @@
             <b>${value} ms</b>
           </div>`;
         latency = `<div class="rtt">
-          <h4>Latência (ida e volta)</h4>
+          <h4>${I("i-clock", "ic ic-sm")} Latência (ida e volta)</h4>
           ${row("min", rtt.min)}${row("média", rtt.avg)}${row("máx", rtt.max)}
         </div>`;
       }
+
+      const stat = (icon, label, value) => `
+        <div class="stat"><span>${icon} ${label}</span><strong>${value}</strong></div>`;
 
       return `
         <div class="ping-head">
@@ -1111,10 +1671,10 @@
         <dl class="ping-meta">${meta}</dl>
         <div class="probes">${(p.probes || []).map(probeChip).join("")}</div>
         <div class="ping-stats">
-          <div class="stat"><span>Enviados</span><strong>${p.sent}</strong></div>
-          <div class="stat"><span>Recebidos</span><strong>${p.received}</strong></div>
-          <div class="stat"><span>Perda</span><strong>${p.loss_percent}%</strong></div>
-          <div class="stat"><span>Tempo limite</span><strong>${p.timeout_s != null ? p.timeout_s + "s" : "—"}</strong></div>
+          ${stat(I("i-ping", "ic ic-sm"), "Enviados", p.sent)}
+          ${stat(I("i-check", "ic ic-sm"), "Recebidos", p.received)}
+          ${stat(I("i-warn", "ic ic-sm"), "Perda", p.loss_percent + "%")}
+          ${stat(I("i-clock", "ic ic-sm"), "Tempo limite", p.timeout_s != null ? p.timeout_s + "s" : "—")}
         </div>
         ${latency}`;
     }
@@ -1150,10 +1710,14 @@
         .map((a) => `<div><dt>Agregação</dt><dd class="mono">AS${esc(a.asn)} ${esc(a.router)}</dd></div>`)
         .join("");
 
+      const headIcon = isBest
+        ? `<span class="path-star">${I("i-star")}</span> Melhor caminho`
+        : `${I("i-route", "ic ic-sm")} Caminho`;
+
       return `
         <div class="path-card ${isBest ? "best" : ""}">
           <div class="path-head">
-            ${isBest ? '<span class="path-star">★</span> Melhor caminho' : "Caminho"}
+            ${headIcon}
             <span class="path-idx">#${path.index}</span>
           </div>
           <dl class="path-attrs">
@@ -1172,10 +1736,10 @@
           <div class="bgp">
             <div class="bgp-head">
               <div class="bgp-title">
-                <span class="bgp-prefix">${esc(p.prefix || "?")}</span>
+                <span class="bgp-prefix">${I("i-route")}${esc(p.prefix || "?")}</span>
                 <span class="bgp-sub">consulta de detalhe BGP</span>
               </div>
-              <span class="badge partial">⚠ Não encontrado</span>
+              <span class="badge partial">${I("i-warn")} Não encontrado</span>
             </div>
             <p class="rtt-empty">O prefixo não está na tabela BGP deste roteador.</p>
           </div>`;
@@ -1200,10 +1764,10 @@
         <div class="bgp">
           <div class="bgp-head">
             <div class="bgp-title">
-              <span class="bgp-prefix">${esc(p.prefix || "?")}</span>
+              <span class="bgp-prefix">${I("i-route")}${esc(p.prefix || "?")}</span>
               <span class="bgp-sub">${sub}</span>
             </div>
-            <span class="path-count">${p.available} path${p.available === 1 ? "" : "s"}</span>
+            <span class="path-count">${I("i-star", "ic ic-sm")}${p.available} path${p.available === 1 ? "" : "s"}</span>
           </div>
           ${best ? pathCard(best, true) : ""}
           ${others.length
@@ -1221,7 +1785,7 @@
             return `<span class="tr-probe tr-ok">${probe.ms} ms</span>`;
           }
           if (probe.type === "timeout") {
-            return `<span class="tr-probe tr-timeout" title="sem resposta">*</span>`;
+            return `<span class="tr-probe tr-timeout" title="sem resposta">${I("i-x", "ic ic-sm")}</span>`;
           }
           return `<span class="tr-probe tr-err" title="falha (${esc(probe.code)})">${esc(probe.code)}</span>`;
         })
@@ -1237,7 +1801,7 @@
       return `
         <div class="tr-hop ${isLast ? "last" : ""}">
           <span class="tr-idx">${hop.hop}</span>
-          <span class="tr-ip mono">${hop.ip ? esc(hop.ip) : "—"}</span>
+          <span class="tr-ip mono">${I("i-hop", "ic ic-sm")}${hop.ip ? esc(hop.ip) : "—"}</span>
           ${asn}
           <span class="tr-probes">${trProbes(hop.times)}</span>
           ${avg}
@@ -1246,10 +1810,10 @@
 
     function tracerouteCard(p) {
       const badges = {
-        success: ["success", "✓ Chegou ao destino"],
-        partial: ["partial", "⚠ Incompleto"],
-        failed: ["failed", "✗ Sem resposta"],
-        unreachable: ["failed", "✗ Inalcançável"],
+        success: ["success", `${I("i-check")} Chegou ao destino`],
+        partial: ["partial", `${I("i-warn")} Incompleto`],
+        failed: ["failed", `${I("i-x")} Sem resposta`],
+        unreachable: ["failed", `${I("i-x")} Inalcançável`],
       };
       const [badgeCls, badgeText] = badges[p.status] || ["partial", esc(p.status)];
       const hops = p.hops || [];
@@ -1258,8 +1822,8 @@
         <div class="tr">
           <div class="tr-head">
             <span class="badge ${badgeCls}">${badgeText}</span>
-            <span class="tr-dest"><span>Destino</span>${esc(p.destination || "?")}</span>
-            <span class="tr-hops">${hops.length} salto${hops.length === 1 ? "" : "s"}</span>
+            <span class="tr-dest">${I("i-dest")}<span>Destino</span>${esc(p.destination || "?")}</span>
+            <span class="tr-hops">${I("i-traceroute", "ic ic-sm")}${hops.length} salto${hops.length === 1 ? "" : "s"}</span>
           </div>
           <div class="tr-hops-list">
             ${hops.map((hop, index) => trHopRow(hop, index === hops.length - 1)).join("")}
@@ -1330,7 +1894,7 @@
       try {
         await navigator.clipboard.writeText($output.textContent || "");
         $copy.textContent = "Copiado!";
-        setTimeout(() => { $copy.textContent = "Copiar"; }, 1500);
+        setTimeout(() => { $copy.innerHTML = `${I("i-copy", "ic ic-sm")} Copiar`; }, 1500);
       } catch (err) {
         setStatus("Não foi possível copiar.", "err");
       }
