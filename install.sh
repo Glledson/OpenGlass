@@ -60,6 +60,7 @@ DO_APT=1
 DO_UV=1
 DO_SYMLINKS=1
 PROMPT_EOF=0
+SERVICE_ACTIVE=0
 
 info()  { if [ "${GAUGE_ACTIVE:-0}" = 1 ]; then printf "${C_CYAN}%s${C_RESET}\n" "• $*" >>"$APT_LOG"; else printf "${C_CYAN}%s${C_RESET}\n" "• $*"; fi; }
 ok()    { if [ "${GAUGE_ACTIVE:-0}" = 1 ]; then printf "${C_GREEN}%s${C_RESET}\n" "✓ $*" >>"$APT_LOG"; else printf "${C_GREEN}%s${C_RESET}\n" "✓ $*"; fi; }
@@ -166,10 +167,11 @@ HOME_BIN="${HOME}/.local/bin"
 UV_BIN="$HOME_BIN/uv"
 PYTHON_BIN=""
 
-# Interface sempre em TUI com whiptail (nativo em Debian/Ubuntu); só cai para
-# texto se o binário não existir.
+# Interface sempre em TUI com whiptail quando há terminal; sem terminal
+# (pipe/cron/automação) cai para prompts em modo texto, que terminam em EOF
+# em vez de ficarem aguardando.
 USE_TUI=0
-if command -v whiptail >/dev/null 2>&1; then
+if [ -t 0 ] && command -v whiptail >/dev/null 2>&1; then
     USE_TUI=1
 fi
 
@@ -411,7 +413,9 @@ step_update() {
         || fail "apt update falhou (veja $APT_LOG)"
     info "Atualizando o sistema (apt upgrade)…"
     _gauge_set 30 "Atualizando o sistema (apt upgrade)…"
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y >>"$APT_LOG" 2>&1 \
+    DEBIAN_FRONTEND=noninteractive apt-get -y \
+        -o Dpkg::Options::="--force-confold" \
+        upgrade >>"$APT_LOG" 2>&1 \
         || fail "apt upgrade falhou (veja $APT_LOG)"
     ok "sistema atualizado (log: $APT_LOG)"
 }
@@ -434,7 +438,9 @@ step_packages() {
         if [ "$DO_APT" -eq 1 ]; then
             info "Instalando: ${missing[*]}"
             _gauge_set 50 "Instalando: ${missing[*]}…"
-            DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}" >>"$APT_LOG" 2>&1 \
+            DEBIAN_FRONTEND=noninteractive apt-get -y \
+                -o Dpkg::Options::="--force-confold" \
+                install "${missing[@]}" >>"$APT_LOG" 2>&1 \
                 || fail "falha ao instalar pacotes (veja $APT_LOG)"
             ok "pacotes instalados"
         else
@@ -452,7 +458,8 @@ step_uv() {
         info "Instalando uv em $HOME_BIN…"
         _gauge_set 65 "Instalando o uv…"
         install -d "$HOME_BIN"
-        curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null
+        curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null \
+            || fail "falha ao instalar o uv (veja $APT_LOG)"
         ok "uv instalado"
     fi
     # Garante que o uv fique no PATH dos shells seguintes.
@@ -530,7 +537,11 @@ e rode este install.sh de dentro do diretório baixado (ou use -d DIR)."
         _gauge_close
         fail "uv não encontrado — remova --no-uv ou instale o uv"
     fi
-    (cd "$REPO_DIR" && "$UV_BIN" sync) && _gauge_set 100 "Dependências instaladas"
+    (cd "$REPO_DIR" && "$UV_BIN" sync) || {
+        _gauge_close
+        fail "uv sync falhou — revise $APT_LOG"
+    }
+    _gauge_set 100 "Dependências instaladas"
     _gauge_close
     PYTHON_BIN="$REPO_DIR/.venv/bin/python"
     [ -x "$PYTHON_BIN" ] || PYTHON_BIN="$(command -v python3)"
@@ -876,7 +887,7 @@ LOG_LEVEL=INFO
 DEBUG=false
 EOF
     cp -f "$REPO_DIR/.env" "$CONFIG_DIR/.env"
-    ok ".env gravado ($REPO_DIR ve $CONFIG_DIR)"
+    ok ".env gravado ($REPO_DIR e $CONFIG_DIR)"
 }
 
 # ---------------------------------------------------------------------------
@@ -940,6 +951,7 @@ WantedBy=multi-user.target
 EOF
     systemctl daemon-reload
     systemctl enable --now openglass
+    SERVICE_ACTIVE=1
     ok "serviço openglass ativo (usuário: $service_user, http://$(hostname -I 2>/dev/null | awk '{print $1}'):8000)"
 }
 
@@ -1009,13 +1021,25 @@ main() {
         warn "o CLI retornou erro — revise $DEVICES_FILE"
     fi
 
-    if [ "$INSTALL_MODE" = "keep" ]; then
-        show_msg "Concluído" \
-"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nConfiguração: mantida (não alterada)\n\nWeb : http://<ip>:8000 (serviço openglass ativo)\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8"
+    # Resumo final — impresso como texto. Uma caixa whiptail no fim bloquearia
+    # a instalação esperando Enter (parece "travada" em sessão capturada).
+    if [ "$SERVICE_ACTIVE" = 1 ]; then
+        web_hint="Web : http://<ip>:8000 (serviço openglass ativo)"
     else
-        show_msg "Concluído" \
-"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nAtivos      : ${#DEV_NAMES[@]} novo(s) em $DEVICES_FILE\n\nWeb : http://<ip>:8000 (serviço openglass ativo)\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8"
+        web_hint="Web : execute 'openglass-web' para subir o servidor (serviço systemd não criado)"
     fi
+    printf '\n'
+    printf "${C_GREEN}✓ OpenGlass instalado!${C_RESET}\n"
+    printf 'Config       : %s\n' "$CONFIG_DIR"
+    printf 'Repositório  : %s\n' "$REPO_DIR"
+    if [ "$INSTALL_MODE" = "keep" ]; then
+        printf 'Configuração : mantida (não alterada)\n'
+    else
+        printf 'Ativos       : %d novo(s) em %s\n' "${#DEV_NAMES[@]}" "$DEVICES_FILE"
+    fi
+    printf '%s\n' "$web_hint"
+    printf 'CLI          : openglass --device <nome> --command ping --param ip=8.8.8.8\n'
+    printf 'Log          : %s\n' "$APT_LOG"
 }
 
 main "$@"
