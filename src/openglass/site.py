@@ -130,7 +130,10 @@ class SiteConfig(BaseModel):
             "subtitle": self.render(self.web.text.subtitle)
             or self.render(self.site_description),
             "title_mode": (self.web.text.title_mode or "").lower(),
-            "links": [link.model_dump() for link in self.web.links],
+            "links": [
+                {**link.model_dump(), "url": self.render(link.url)}
+                for link in self.web.links
+            ],
             "menus": [menu.model_dump() for menu in self.web.menus],
             "logo": self.web.logo.model_dump(),
             "theme": self.web.theme.model_dump(),

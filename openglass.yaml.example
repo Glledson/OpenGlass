@@ -7,6 +7,8 @@
 #   ORG_NAME     -> org_name
 #   SITE_TITLE   -> site_title
 #   NOC_EMAIL    -> email de contato exibido no menu "Contato"
+# Em textos/URLs, use chaves {org_name}, {site_title} e {primary_asn}, que são
+# interpolados em tempo de execução pelo backend (site.frontend_payload).
 debug: false
 developer_mode: false
 
@@ -100,15 +102,15 @@ structured:
 web:
   links:
     - title: PeeringDB
-      url: "https://www.peeringdb.com/asn/ASN"
+      url: "https://www.peeringdb.com/asn/{primary_asn}"
       side: left
       order: 1
     - title: RADb
-      url: "https://www.radb.net/query?advanced_query=&keywords=ASASN"
+      url: "https://www.radb.net/query?advanced_query=&keywords=AS{primary_asn}"
       side: left
       order: 2
     - title: IRR Explorer
-      url: "https://irrexplorer.nlnog.net/asn/ASASN"
+      url: "https://irrexplorer.nlnog.net/asn/{primary_asn}"
       side: left
       order: 3
 

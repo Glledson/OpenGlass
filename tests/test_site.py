@@ -84,3 +84,28 @@ class TestLoadSiteConfig:
         assert payload["primary_asn"] == 12345
         assert payload["theme"]["colors"]["primary"] == "#22c55e"
         assert len(payload["menus"]) == 1
+
+    def test_links_render_primary_asn(self, tmp_path) -> None:
+        config = load_site_config(
+            _write(
+                tmp_path,
+                textwrap.dedent(
+                    """
+                    primary_asn: 64577
+                    web:
+                      links:
+                        - title: PeeringDB
+                          url: https://www.peeringdb.com/asn/{primary_asn}
+                          side: left
+                          order: 1
+                    """
+                ),
+            )
+        )
+        payload = config.frontend_payload()
+        assert payload["links"][0]["url"] == "https://www.peeringdb.com/asn/64577"
+
+    def test_links_without_placeholders_unchanged(self, tmp_path) -> None:
+        config = load_site_config(_write(tmp_path, SITE))
+        payload = config.frontend_payload()
+        assert payload["links"][0]["url"] == "https://example.com/1"

@@ -133,8 +133,13 @@ prompt_secret() { # $1=label — seta REPLY (não ecoa)
     return 0
 }
 
-prompt_optional() { # $1=label — permite vazio
-    printf "${C_BOLD}%s${C_RESET}: " "$1" >&2
+prompt_optional() { # $1=label  $2=default — permite vazio
+    local default="${2:-}"
+    if [ -n "$default" ]; then
+        printf "${C_BOLD}%s${C_RESET} [%s]: " "$1" "$default" >&2
+    else
+        printf "${C_BOLD}%s${C_RESET}: " "$1" >&2
+    fi
     if ! IFS= read -r value; then PROMPT_EOF=1; return 1; fi
     REPLY="${value//$'\r'/}"
     return 0
@@ -211,13 +216,13 @@ get_secret() { # $1=título  $2=prompt
     return 0
 }
 
-get_input_optional() { # $1=título  $2=prompt — permite resposta vazia
+get_input_optional() { # $1=título  $2=prompt  $3=default — permite resposta vazia
     local value
     if [ "$USE_TUI" -eq 1 ]; then
         value=$(whiptail --backtitle "$BANNER" --title "$1" \
-            --inputbox "$2" 0 0 "" 3>&1 1>&2 2>&3) || return 1
+            --inputbox "$2" 0 0 "$3" 3>&1 1>&2 2>&3) || return 1
     else
-        prompt_optional "$2" || return 1
+        prompt_optional "$2" "$3" || return 1
         value="$REPLY"
     fi
     REPLY="${value//$'\r'/}"
@@ -384,7 +389,6 @@ step_uv() {
 # 6. /etc/openglass + idempotência
 # ---------------------------------------------------------------------------
 step_config_dir() {
-    local choice
     if [ -d "$CONFIG_DIR" ]; then
         info "$CONFIG_DIR já existe — verificando idempotência…"
         if menu_select "Instalação existente" \
@@ -443,6 +447,41 @@ step_clone() {
 # ---------------------------------------------------------------------------
 # 8. Assistente do site (openglass.yaml)
 # ---------------------------------------------------------------------------
+prefill_site_from_config() { # carrega valores atuais no modo Editar
+    [ "$INSTALL_MODE" = "edit" ] && [ -f "$CONFIG_FILE" ] || return 0
+    local asn org title noc site_vals
+    mapfile -t site_vals < <("$PYTHON_BIN" - "$CONFIG_FILE" <<'PYE'
+import sys, re
+import yaml
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as fh:
+        data = yaml.safe_load(fh) or {}
+except Exception:
+    raise SystemExit(0)
+if not isinstance(data, dict):
+    raise SystemExit(0)
+print(data.get("primary_asn") or "")
+print(data.get("org_name") or "")
+print(data.get("site_title") or "")
+noc = ""
+for menu in (data.get("web") or {}).get("menus") or []:
+    if str(menu.get("title", "")).lower() in ("contato", "contact"):
+        match = re.search(r"\]\(mailto:([^)]+)\)", str(menu.get("content") or ""))
+        noc = match.group(1) if match else ""
+        break
+print(noc)
+PYE
+)
+    asn="${site_vals[0]}"; org="${site_vals[1]}"; title="${site_vals[2]}"; noc="${site_vals[3]}"
+    [ -n "$asn$org$title$noc" ] && {
+        info "Preenchendo com os valores atuais de $CONFIG_FILE"
+        ASN="${asn//[^0-9]/}"
+        ORG_NAME="$org"; SITE_TITLE="$title"; NOC_EMAIL="$noc"
+    }
+    return 0
+}
+
 wizard_site() {
     local summary
     printf '\n'
@@ -575,41 +614,55 @@ wizard_device() {
     while :; do
         # Nome
         while :; do
-            if ! get_input "Ativo — nome" "Nome do ativo (ex.: edge-r1)" ""; then fail "cancelado"; fi
+            if ! get_input "Ativo — nome" "Nome do ativo (ex.: edge-r1)" "${dev_name:-}"; then fail "cancelado"; fi
             [ -n "$REPLY" ] && { dev_name="$REPLY"; break; }
             show_msg "Campo obrigatório" "Informe o nome do ativo."
         done
-        # Vendor (menu dinâmico de nodes/*.yaml)
+        # Vendor (menu dinâmico de nodes/*.yaml) — atual vem primeiro
         vendor_menu
+        if [ -n "${dev_vendor:-}" ] && [ "${VENDOR_ITEMS[0]:-}" != "$dev_vendor" ]; then
+            local -a ordered=("$dev_vendor" "perfil em nodes/$dev_vendor.yaml")
+            local j
+            for ((j = 0; j < ${#VENDOR_ITEMS[@]}; j += 2)); do
+                [ "${VENDOR_ITEMS[j]}" = "$dev_vendor" ] && continue
+                ordered+=("${VENDOR_ITEMS[j]}" "${VENDOR_ITEMS[j + 1]}")
+            done
+            VENDOR_ITEMS=("${ordered[@]}")
+        fi
         if ! menu_select "Ativo — vendor" "Selecione o vendor (perfil em nodes/):" "${VENDOR_ITEMS[@]}"; then fail "cancelado"; fi
         dev_vendor="$REPLY"
         # IPv4
         while :; do
-            if ! get_input "Ativo — IPv4" "Endereço IPv4 de gerenciamento (ex.: 45.5.40.255)" ""; then fail "cancelado"; fi
+            if ! get_input "Ativo — IPv4" "Endereço IPv4 de gerenciamento (ex.: 45.5.40.255)" "${dev_ip:-}"; then fail "cancelado"; fi
             valid_ipv4 "$REPLY" && { dev_ip="$REPLY"; break; }
             show_msg "IPv4 inválido" "Informe um endereço IPv4 válido (ex.: 45.5.40.255)."
         done
         # Source IPv4
         while :; do
-            if ! get_input "Ativo — source IPv4" "IPv4 de origem das consultas (interface de origem)" ""; then fail "cancelado"; fi
+            if ! get_input "Ativo — source IPv4" "IPv4 de origem das consultas (interface de origem)" "${dev_src:-}"; then fail "cancelado"; fi
+            [ -z "$REPLY" ] && [ -n "${dev_src:-}" ] && break
             if [ -n "$REPLY" ] && valid_ipv4 "$REPLY"; then { dev_src="$REPLY"; break; }; fi
             show_msg "Source IPv4 inválido" "Informe um endereço IPv4 válido."
         done
         # Comunidade SNMP
-        if ! get_input_optional "Ativo — SNMP" "Comunidade SNMP (opcional)" ""; then fail "cancelado"; fi
-        dev_snmp="$REPLY"
+        if ! get_input_optional "Ativo — SNMP" "Comunidade SNMP (opcional)" "${dev_snmp:-}"; then fail "cancelado"; fi
+        [ -n "$REPLY" ] && dev_snmp="$REPLY"
         # Usuário SSH
         while :; do
-            if ! get_input "Ativo — usuário SSH" "Usuário SSH" ""; then fail "cancelado"; fi
+            if ! get_input "Ativo — usuário SSH" "Usuário SSH" "${dev_user:-}"; then fail "cancelado"; fi
             [ -n "$REPLY" ] && { dev_user="$REPLY"; break; }
             show_msg "Campo obrigatório" "Informe o usuário SSH."
         done
-        # Senha SSH (nunca ecoa)
-        if ! get_secret "Ativo — senha SSH" "Senha SSH (não será exibida)"; then fail "cancelado"; fi
-        dev_pass="$REPLY"
+        # Senha SSH (nunca ecoa; vazio mantém a anterior no modo Corrigir)
+        while :; do
+            if ! get_secret "Ativo — senha SSH" "Senha SSH (não será exibida)"; then fail "cancelado"; fi
+            [ -n "$REPLY" ] && { dev_pass="$REPLY"; break; }
+            [ -n "${dev_pass:-}" ] && break
+            show_msg "Campo obrigatório" "Informe a senha SSH."
+        done
         # Porta SSH
         while :; do
-            if ! get_input "Ativo — porta SSH" "Porta SSH do ativo" "22"; then fail "cancelado"; fi
+            if ! get_input "Ativo — porta SSH" "Porta SSH do ativo" "${dev_port:-22}"; then fail "cancelado"; fi
             valid_port "$REPLY" && { dev_port="$REPLY"; break; }
             show_msg "Porta inválida" "A porta deve ser um número entre 1 e 65535."
         done
@@ -632,8 +685,8 @@ wizard_device() {
         fi
     done
 
-    DEV_NAMES+=("$dev_name"); DEV_VENDORS+=("$dev_vendor"); DEV_IPS+=("$dev_ip")
-    DEV_SRCS+=("$dev_src"); DEV_SNMPS+=("$dev_snmp"); DEV_USERS+=("$dev_user")
+    DEV_NAMES+=("${dev_name:-}"); DEV_VENDORS+=("$dev_vendor"); DEV_IPS+=("${dev_ip:-}")
+    DEV_SRCS+=("${dev_src:-}"); DEV_SNMPS+=("${dev_snmp:-}"); DEV_USERS+=("${dev_user:-}")
     DEV_PASSES+=("$dev_pass"); DEV_PORTS+=("$dev_port")
 }
 
@@ -813,6 +866,7 @@ main() {
     step_uv
     step_config_dir
     step_clone
+    prefill_site_from_config
     wizard_site
     write_site_config
     wizard_devices
