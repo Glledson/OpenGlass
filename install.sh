@@ -737,9 +737,9 @@ wizard_device() {
         dev_vendor="$REPLY"
         # IPv4
         while :; do
-            if ! get_input "Ativo — IPv4" "Endereço IPv4 de gerenciamento (ex.: 45.5.40.255)" "${dev_ip:-}"; then fail "cancelado"; fi
+            if ! get_input "Ativo — IPv4" "Endereço IPv4 de gerenciamento (ex.: 192.168.0.1)" "${dev_ip:-}"; then fail "cancelado"; fi
             valid_ipv4 "$REPLY" && { dev_ip="$REPLY"; break; }
-            show_msg "IPv4 inválido" "Informe um endereço IPv4 válido (ex.: 45.5.40.255)."
+            show_msg "IPv4 inválido" "Informe um endereço IPv4 válido (ex.: 192.168.0.1)."
         done
         # Source IPv4 (opcional — corrigido: usa get_input_optional e aceita
         # vazio incondicionalmente, sem depender de um valor prévio)

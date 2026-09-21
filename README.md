@@ -4,7 +4,7 @@ Ferramenta web de diagnóstico de rede para roteadores de borda: escolha o
 roteador e o comando, e receba o resultado da análise em um cartão didático —
 com a saída bruta sempre disponível como referência.
 
-**Versão:** 1.0.0
+**Versão:** 1.1.0
 
 ## Funcionalidades
 
@@ -32,8 +32,11 @@ cd OpenGlass
 sudo bash install.sh
 ```
 
-O instalador, de forma interativa (TUI com whiptail; use `--text` para
-prompts em modo texto, útil em automação):
+O instalador é interativo (TUI com whiptail, do começo ao fim — com gauge de
+progresso nas fases longas). Sem terminal interativo, a interface cai para
+prompts em modo texto. Todo o output é gravado em `/root/openglass-install.log`.
+
+Fluxo do instalador:
 
 1. verifica root, detecta o SO (Debian 11+/Ubuntu 20.04+) e atualiza o sistema;
 2. instala dependências (git, curl, python3, uv, whiptail) e cria a pasta
@@ -73,8 +76,8 @@ sudo bash install.sh --uninstall
 ```
 
 Opções extras: `--no-apt` (pula atualização/instalação de pacotes), `--no-uv`,
-`--no-symlinks`, `--text`, `-d DIR` (diretório do repositório), `-c DIR`
-(config).
+`--no-symlinks`, `--service`/`--no-service` (o serviço é o padrão), `-d DIR`
+(diretório do repositório), `-c DIR` (config).
 
 ### Instalação manual (desenvolvimento)
 
@@ -126,7 +129,7 @@ novos NOS entram com um perfil por arquivo em `nodes/`.
 uv run pytest
 ```
 
-**165 testes** (com Netmiko mockado e saídas reais de exemplo; sem dispositivo real).
+**167 testes** (com Netmiko mockado e saídas reais de exemplo; sem dispositivo real).
 
 ## Estrutura
 
@@ -141,6 +144,7 @@ src/openglass/
   cli.py                CLI interativo/one-shot
   api.py                API + frontend estático (FastAPI)
   static/index.html     frontend
-tests/                  suíte de testes (165)
+tests/                  suíte de testes (167)
 install.sh              instalador interativo (root: sudo bash install.sh)
+CHANGELOG.md            histórico de versões
 ```
