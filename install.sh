@@ -13,7 +13,7 @@
 #   6. Assistente de ativos: nome, vendor (menu nodes/*.yaml), IPv4, source,
 #      SNMP, usuário/senha SSH, porta — com confirmação e repetição
 #   7. Gera /etc/openglass/openglass.yaml e devices.yaml (com backup)
-#   8. .env, symlinks, serviço systemd (--service), resumo final
+#   8. .env, symlinks, serviço systemd (criado por padrão), resumo final
 #
 # IMPORTANTE: este instalador NÃO baixa o repositório. Baixe/clone o projeto
 # antes (ex.: git clone https://github.com/Glledson/OpenGlass.git) e rode o
@@ -22,8 +22,8 @@
 # estiver em área restrita (ex.: /root/OpenGlass), roda como root.
 #
 # Uso:
-#   sudo bash install.sh                 # instalação completa
-#   sudo bash install.sh --service       # + unit systemd (serviço web)
+#   sudo bash install.sh                 # instalação completa + serviço web
+#   sudo bash install.sh --no-service    # sem criar o serviço
 #   sudo bash install.sh --uninstall     # remove serviço e symlinks
 #
 # Opções:
