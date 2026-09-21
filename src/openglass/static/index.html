@@ -1343,7 +1343,6 @@
     <header class="hero">
       <img id="logo" class="hidden" alt="logo">
       <h1 id="site-title">OpenGlass</h1>
-      <p class="sub" id="subtitle"></p>
     </header>
 
     <section class="card">
@@ -1427,7 +1426,6 @@
     const $output = document.getElementById("output");
     const $copy = document.getElementById("copy");
     const $siteTitle = document.getElementById("site-title");
-    const $subtitle = document.getElementById("subtitle");
     const $logo = document.getElementById("logo");
     const $links = document.getElementById("links");
     const $menus = document.getElementById("menus");
@@ -1500,7 +1498,7 @@
     function renderSite(site) {
       document.title = site.site_title || "OpenGlass";
       $siteTitle.textContent = site.site_title || "OpenGlass";
-      $subtitle.textContent = site.subtitle || site.site_description || "";
+      $subtitle.textContent = site.org_name || site.subtitle || "";
 
       const logoPath = (site.logo && (site.logo.light || site.logo.dark)) || "";
       if (logoPath && (site.title_mode || "").includes("logo")) {
