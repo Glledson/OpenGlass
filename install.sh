@@ -13,21 +13,22 @@
 #   6. Assistente de ativos: nome, vendor (menu nodes/*.yaml), IPv4, source,
 #      SNMP, usuário/senha SSH, porta — com confirmação e repetição
 #   7. Gera /etc/openglass/openglass.yaml e devices.yaml (com backup)
-#   8. .env, symlinks, serviço systemd (criado por padrão), resumo final
+#   8. .env, symlinks, serviço systemd (padrão — desligue com --no-service), resumo final
 #
 # IMPORTANTE: este instalador NÃO baixa o repositório. Baixe/clone o projeto
 # antes (ex.: git clone https://github.com/Glledson/OpenGlass.git) e rode o
 # install.sh de dentro do diretório baixado.
-# O serviço systemd roda como usuário dedicado 'openglass'; se o repositório
+# O serviço systemd é criado e habilitado por padrão (systemctl enable --now
+# openglass), rodando como usuário dedicado 'openglass'; se o repositório
 # estiver em área restrita (ex.: /root/OpenGlass), roda como root.
 #
 # Uso:
-#   sudo bash install.sh                 # instalação completa + serviço web
-#   sudo bash install.sh --no-service    # sem criar o serviço
+#   sudo bash install.sh                 # instalação completa + serviço systemd (padrão)
+#   sudo bash install.sh --no-service    # instalação sem criar/habilitar o serviço
 #   sudo bash install.sh --uninstall     # remove serviço e symlinks
 #
 # Opções:
-#   --no-service      não cria/habilita o serviço systemd (padrão: cria)
+#   --no-service       não cria/habilita o serviço systemd (serviço é o padrão)
 #   --no-apt           pula atualização/instalação de pacotes
 #   --no-uv            não instala o uv (reusa o existente)
 #   --no-symlinks      não cria symlinks em /usr/local/bin
@@ -38,8 +39,6 @@
 # A interface é TUI com whiptail (nativo em Debian/Ubuntu), do preparo do
 # ambiente (gauge de progresso) até os assistentes. Todo o output da
 # instalação é gravado em /root/openglass-install.log.
-# O serviço web sobe sozinho (systemd) ao final, usando a configuração de
-# $CONFIG_DIR; o uv fica no PATH via /etc/profile.d/openglass-uv.sh.
 # ---------------------------------------------------------------------------
 
 set -euo pipefail
@@ -60,7 +59,6 @@ DO_APT=1
 DO_UV=1
 DO_SYMLINKS=1
 PROMPT_EOF=0
-SERVICE_ACTIVE=0
 
 info()  { if [ "${GAUGE_ACTIVE:-0}" = 1 ]; then printf "${C_CYAN}%s${C_RESET}\n" "• $*" >>"$APT_LOG"; else printf "${C_CYAN}%s${C_RESET}\n" "• $*"; fi; }
 ok()    { if [ "${GAUGE_ACTIVE:-0}" = 1 ]; then printf "${C_GREEN}%s${C_RESET}\n" "✓ $*" >>"$APT_LOG"; else printf "${C_GREEN}%s${C_RESET}\n" "✓ $*"; fi; }
@@ -130,10 +128,8 @@ OpenGlass — instalador interativo
 Uso:
   sudo bash install.sh [opções]
 
-O serviço systemd (openglass) é criado e habilitado automaticamente.
-
 Opções:
-  --no-service     NÃO cria/habilita o serviço web (padrão: cria)
+  --no-service     não cria/habilita a unit do systemd (por padrão, cria)
   --uninstall      remove a unit do systemd e os symlinks
   --no-apt         pula atualização/instalação de pacotes
   --no-uv          não instala o uv (reusa o existente)
@@ -146,7 +142,7 @@ EOF
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        --service)        DO_SERVICE=1; shift ;;
+        --service)        DO_SERVICE=1; shift ;;  # mantido por compatibilidade; já é o padrão
         --no-service)     DO_SERVICE=0; shift ;;
         --uninstall)      DO_UNINSTALL=1; shift ;;
         --no-apt)         DO_APT=0; shift ;;
@@ -167,11 +163,11 @@ HOME_BIN="${HOME}/.local/bin"
 UV_BIN="$HOME_BIN/uv"
 PYTHON_BIN=""
 
-# Interface sempre em TUI com whiptail quando há terminal; sem terminal
-# (pipe/cron/automação) cai para prompts em modo texto, que terminam em EOF
-# em vez de ficarem aguardando.
+# Interface sempre em TUI com whiptail (nativo em Debian/Ubuntu); só cai para
+# texto se o binário não existir. Reavaliado de novo após step_packages,
+# caso o whiptail tenha acabado de ser instalado nesta mesma execução.
 USE_TUI=0
-if [ -t 0 ] && command -v whiptail >/dev/null 2>&1; then
+if command -v whiptail >/dev/null 2>&1; then
     USE_TUI=1
 fi
 
@@ -413,9 +409,7 @@ step_update() {
         || fail "apt update falhou (veja $APT_LOG)"
     info "Atualizando o sistema (apt upgrade)…"
     _gauge_set 30 "Atualizando o sistema (apt upgrade)…"
-    DEBIAN_FRONTEND=noninteractive apt-get -y \
-        -o Dpkg::Options::="--force-confold" \
-        upgrade >>"$APT_LOG" 2>&1 \
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y >>"$APT_LOG" 2>&1 \
         || fail "apt upgrade falhou (veja $APT_LOG)"
     ok "sistema atualizado (log: $APT_LOG)"
 }
@@ -438,14 +432,20 @@ step_packages() {
         if [ "$DO_APT" -eq 1 ]; then
             info "Instalando: ${missing[*]}"
             _gauge_set 50 "Instalando: ${missing[*]}…"
-            DEBIAN_FRONTEND=noninteractive apt-get -y \
-                -o Dpkg::Options::="--force-confold" \
-                install "${missing[@]}" >>"$APT_LOG" 2>&1 \
+            DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}" >>"$APT_LOG" 2>&1 \
                 || fail "falha ao instalar pacotes (veja $APT_LOG)"
             ok "pacotes instalados"
         else
             warn "pacotes faltando (pulados com --no-apt): ${missing[*]}"
         fi
+    fi
+
+    # Reavalia USE_TUI: se o whiptail acabou de ser instalado agora, passamos
+    # a usar a interface gráfica a partir daqui em vez de ficar preso ao modo
+    # texto decidido no início do script.
+    if [ "$USE_TUI" -eq 0 ] && command -v whiptail >/dev/null 2>&1; then
+        USE_TUI=1
+        ok "whiptail disponível — passando a usar a interface TUI"
     fi
 }
 
@@ -537,10 +537,10 @@ e rode este install.sh de dentro do diretório baixado (ou use -d DIR)."
         _gauge_close
         fail "uv não encontrado — remova --no-uv ou instale o uv"
     fi
-    (cd "$REPO_DIR" && "$UV_BIN" sync) || {
+    if ! (cd "$REPO_DIR" && "$UV_BIN" sync); then
         _gauge_close
-        fail "uv sync falhou — revise $APT_LOG"
-    }
+        fail "uv sync falhou (veja $APT_LOG)"
+    fi
     _gauge_set 100 "Dependências instaladas"
     _gauge_close
     PYTHON_BIN="$REPO_DIR/.venv/bin/python"
@@ -741,12 +741,13 @@ wizard_device() {
             valid_ipv4 "$REPLY" && { dev_ip="$REPLY"; break; }
             show_msg "IPv4 inválido" "Informe um endereço IPv4 válido (ex.: 45.5.40.255)."
         done
-        # Source IPv4
+        # Source IPv4 (opcional — corrigido: usa get_input_optional e aceita
+        # vazio incondicionalmente, sem depender de um valor prévio)
         while :; do
-            if ! get_input "Ativo — source IPv4" "IPv4 de origem das consultas (interface de origem)" "${dev_src:-}"; then fail "cancelado"; fi
-            [ -z "$REPLY" ] && [ -n "${dev_src:-}" ] && break
-            if [ -n "$REPLY" ] && valid_ipv4 "$REPLY"; then { dev_src="$REPLY"; break; }; fi
-            show_msg "Source IPv4 inválido" "Informe um endereço IPv4 válido."
+            if ! get_input_optional "Ativo — source IPv4" "IPv4 de origem das consultas (opcional)" "${dev_src:-}"; then fail "cancelado"; fi
+            if [ -z "$REPLY" ]; then dev_src=""; break; fi
+            if valid_ipv4 "$REPLY"; then { dev_src="$REPLY"; break; }; fi
+            show_msg "Source IPv4 inválido" "Informe um endereço IPv4 válido ou deixe em branco."
         done
         # Comunidade SNMP
         if ! get_input_optional "Ativo — SNMP" "Comunidade SNMP (opcional)" "${dev_snmp:-}"; then fail "cancelado"; fi
@@ -879,15 +880,14 @@ PYENV
 # 10. .env apontando para a configuração
 # ---------------------------------------------------------------------------
 write_env() {
-    info "Gerando .env …"
+    info "Gerando $REPO_DIR/.env …"
     cat > "$REPO_DIR/.env" <<EOF
 INVENTORY_PATH=$DEVICES_FILE
 CONFIG_PATH=$CONFIG_FILE
 LOG_LEVEL=INFO
 DEBUG=false
 EOF
-    cp -f "$REPO_DIR/.env" "$CONFIG_DIR/.env"
-    ok ".env gravado ($REPO_DIR e $CONFIG_DIR)"
+    ok ".env gravado"
 }
 
 # ---------------------------------------------------------------------------
@@ -941,7 +941,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 $( [ "$service_user" = "openglass" ] && printf 'User=%s\nGroup=%s\n' "$service_user" "$service_user" )
-WorkingDirectory=$CONFIG_DIR
+WorkingDirectory=$REPO_DIR
 ExecStart=$REPO_DIR/.venv/bin/openglass-web
 Restart=on-failure
 RestartSec=5
@@ -951,7 +951,6 @@ WantedBy=multi-user.target
 EOF
     systemctl daemon-reload
     systemctl enable --now openglass
-    SERVICE_ACTIVE=1
     ok "serviço openglass ativo (usuário: $service_user, http://$(hostname -I 2>/dev/null | awk '{print $1}'):8000)"
 }
 
@@ -1021,25 +1020,19 @@ main() {
         warn "o CLI retornou erro — revise $DEVICES_FILE"
     fi
 
-    # Resumo final — impresso como texto. Uma caixa whiptail no fim bloquearia
-    # a instalação esperando Enter (parece "travada" em sessão capturada).
-    if [ "$SERVICE_ACTIVE" = 1 ]; then
-        web_hint="Web : http://<ip>:8000 (serviço openglass ativo)"
-    else
-        web_hint="Web : execute 'openglass-web' para subir o servidor (serviço systemd não criado)"
-    fi
-    printf '\n'
-    printf "${C_GREEN}✓ OpenGlass instalado!${C_RESET}\n"
-    printf 'Config       : %s\n' "$CONFIG_DIR"
-    printf 'Repositório  : %s\n' "$REPO_DIR"
+    # Conclusão: caixa whiptail apenas em terminal interativo (com TTY a pessoa
+    # vê e fecha com Enter). Sem TTY (SSH sem -t, crontab, captura automática),
+    # o resumo sai em texto e a instalação termina sozinha — não fica "travada".
     if [ "$INSTALL_MODE" = "keep" ]; then
-        printf 'Configuração : mantida (não alterada)\n'
+        summary_msg="OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nConfiguração: mantida (não alterada)\n\nWeb (serviço) : systemctl start openglass  →  http://<ip>:8000\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
     else
-        printf 'Ativos       : %d novo(s) em %s\n' "${#DEV_NAMES[@]}" "$DEVICES_FILE"
+        summary_msg="OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nAtivos      : ${#DEV_NAMES[@]} novo(s) em $DEVICES_FILE\n\nWeb (serviço) : systemctl start openglass  →  http://<ip>:8000\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
     fi
-    printf '%s\n' "$web_hint"
-    printf 'CLI          : openglass --device <nome> --command ping --param ip=8.8.8.8\n'
-    printf 'Log          : %s\n' "$APT_LOG"
+    if [ "$USE_TUI" -eq 1 ] && [ -t 0 ]; then
+        show_msg "Concluído" "$summary_msg"
+    else
+        printf '\n-- Concluído --\n%b\n' "$summary_msg"
+    fi
 }
 
 main "$@"
