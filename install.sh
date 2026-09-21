@@ -30,10 +30,12 @@
 #   --no-apt           pula atualização/instalação de pacotes
 #   --no-uv            não instala o uv (reusa o existente)
 #   --no-symlinks      não cria symlinks em /usr/local/bin
-#   --text             força prompts em modo texto (sem TUI; útil p/ automação)
 #   -d DIR             diretório com o repositório JÁ baixado (padrão: este
 #                      diretório, onde o install.sh está)
 #   -c DIR             diretório de configuração (padrão /etc/openglass)
+#
+# A interface é TUI com whiptail (nativo em Debian/Ubuntu). Todo o output da
+# instalação é gravado em /root/openglass-install.log.
 # ---------------------------------------------------------------------------
 
 set -euo pipefail
@@ -46,14 +48,13 @@ SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 REPO_DIR="$SELF_DIR"
 CONFIG_DIR="/etc/openglass"
-APT_LOG="/var/log/openglass-install.log"
+APT_LOG="/root/openglass-install.log"
 BANNER="OpenGlass — instalador"
 DO_SERVICE=0
 DO_UNINSTALL=0
 DO_APT=1
 DO_UV=1
 DO_SYMLINKS=1
-FORCE_TEXT=0
 PROMPT_EOF=0
 
 info()  { printf "${C_CYAN}%s${C_RESET}\n" "• $*"; }
@@ -66,6 +67,14 @@ _cleanup() {
     exit 130
 }
 trap _cleanup INT TERM
+
+# Pega todo o output da instalação (tela + log em /root).
+_log_start() {
+    : > "$APT_LOG"
+    exec > >(tee -a "$APT_LOG") 2>&1
+    info "log de instalação: $APT_LOG"
+    trap 'wait' EXIT
+}
 
 usage() {
     cat <<'EOF'
@@ -80,7 +89,6 @@ Opções:
   --no-apt         pula atualização/instalação de pacotes
   --no-uv          não instala o uv (reusa o existente)
   --no-symlinks    não cria symlinks em /usr/local/bin
-  --text           força prompts em modo texto (sem whiptail)
   -d DIR           diretório com o repositório JÁ baixado (padrão: este)
   -c DIR           diretório de configuração (padrão /etc/openglass)
   -h, --help       mostra esta ajuda
@@ -94,7 +102,6 @@ while [ "$#" -gt 0 ]; do
         --no-apt)         DO_APT=0; shift ;;
         --no-uv)          DO_UV=0; shift ;;
         --no-symlinks)    DO_SYMLINKS=0; shift ;;
-        --text)           FORCE_TEXT=1; shift ;;
         -d)               REPO_DIR="$2"; shift 2 ;;
         --dir)            REPO_DIR="$2"; shift 2 ;;
         -c)               CONFIG_DIR="$2"; shift 2 ;;
@@ -110,9 +117,10 @@ HOME_BIN="${HOME}/.local/bin"
 UV_BIN="$HOME_BIN/uv"
 PYTHON_BIN=""
 
-# Modo TUI (whiptail) sempre que possível: terminal interativo e whiptail.
+# Interface sempre em TUI com whiptail (nativo em Debian/Ubuntu); só cai para
+# texto se o binário não existir.
 USE_TUI=0
-if [ "$FORCE_TEXT" -eq 0 ] && [ -t 0 ] && command -v whiptail >/dev/null 2>&1; then
+if command -v whiptail >/dev/null 2>&1; then
     USE_TUI=1
 fi
 
@@ -889,9 +897,12 @@ uninstall() {
 # ---------------------------------------------------------------------------
 main() {
     if [ "$DO_UNINSTALL" -eq 1 ]; then
+        _log_start
         uninstall
         exit 0
     fi
+
+    _log_start
 
     printf '\n'
     printf "${C_CYAN}┌──────────────────────────────────────────┐${C_RESET}\n"
