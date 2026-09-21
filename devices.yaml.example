@@ -1,7 +1,7 @@
 # Copie para devices.yaml e preencha com seus roteadores.
 # devices.yaml NÃO deve ser versionado (contém credenciais).
 #
-# Formato compatível com hyperglass (https://hyperglass.dev/docs/adding-devices).
+# Formato próprio do OpenGlass (inspirado em looking glasses de código aberto).
 # Campos ativos nesta fase: address, credential, port, nos.
 # snmp e network/vrfs são armazenados para fase futura (monitoramento,
 # parsing/filtro) — ainda não usados pela engine de comandos.

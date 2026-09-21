@@ -36,17 +36,22 @@ O instalador, de forma interativa (TUI com whiptail; use `--text` para
 prompts em modo texto, útil em automação):
 
 1. verifica root, detecta o SO (Debian 11+/Ubuntu 20.04+) e atualiza o sistema;
-2. instala dependências (git, curl, python3, uv, whiptail), clona o projeto em
-   `/opt/openglass` e cria a pasta `/etc/openglass/`;
-3. se já houver instalação, pergunta se deseja **reconfigurar do zero**,
-   **editar** (mantém ativos atuais) ou cancelar;
-4. configura o **site** (ASN, nome do provedor, site e contato do NOC) com
+2. instala dependências (git, curl, python3, uv, whiptail) e cria a pasta
+   `/etc/openglass/`;
+3. usa o repositório **já baixado** (o próprio diretório onde o `install.sh`
+   está; não faz download novamente — use `-d DIR` se o clone estiver em outro
+   lugar);
+4. se já houver instalação (`/etc/openglass` com `openglass.yaml` e
+   `devices.yaml`), pergunta se deseja **usar os configs existentes** (pula os
+   wizards), **reconfigurar do zero**, **editar** (mantém ativos atuais) ou
+   cancelar;
+5. configura o **site** (ASN, nome do provedor, site e contato do NOC) com
    validação em tempo real e tela de confirmação (**Confirmar/Corrigir/
    Cancelar** — "Corrigir" volta com o formulário pré-preenchido);
-5. configura os **ativos** (roteadores: nome, vendor vindo de `nodes/`, IPv4,
+6. configura os **ativos** (roteadores: nome, vendor vindo de `nodes/`, IPv4,
    source IPv4, comunidade SNMP, usuário/senha SSH e porta) com confirmação e
    repetição;
-6. gera `/etc/openglass/openglass.yaml` e `/etc/openglass/devices.yaml` (com
+7. gera `/etc/openglass/openglass.yaml` e `/etc/openglass/devices.yaml` (com
    backup `.bak.<timestamp>` antes de sobrescrever), cria o `.env` do serviço
    e roda um teste do CLI.
 
@@ -55,6 +60,9 @@ Como serviço web (systemd, no boot):
 ```bash
 sudo bash install.sh --service
 ```
+
+O serviço roda com o usuário dedicado `openglass`; se o repositório estiver em
+área restrita (ex.: `/root/OpenGlass`), roda como root (aviso na instalação).
 
 Remover o serviço e os symlinks (mantém as configurações):
 

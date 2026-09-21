@@ -5,14 +5,21 @@
 # Fluxo:
 #   1. Root check, detecção do OS (Debian 11+/Ubuntu 20.04+) e atualização
 #   2. Pacotes necessários (instala apenas os ausentes)
-#   3. Pasta /etc/openglass + idempotência (reconfigurar / editar / cancelar)
-#   4. Clone do repositório e uv sync
+#   3. Pasta /etc/openglass + idempotência (usar existentes / reconfigurar /
+#      editar / cancelar)
+#   4. Use o repositório já baixado (sem git clone) e faz o uv sync
 #   5. Assistente do site (ASN, provedor, site, NOC) com confirmação
 #      Confirmar / Corrigir (pré-preenchido) / Cancelar
 #   6. Assistente de ativos: nome, vendor (menu nodes/*.yaml), IPv4, source,
 #      SNMP, usuário/senha SSH, porta — com confirmação e repetição
 #   7. Gera /etc/openglass/openglass.yaml e devices.yaml (com backup)
 #   8. .env, symlinks, serviço systemd (--service), resumo final
+#
+# IMPORTANTE: este instalador NÃO baixa o repositório. Baixe/clone o projeto
+# antes (ex.: git clone https://github.com/Glledson/OpenGlass.git) e rode o
+# install.sh de dentro do diretório baixado.
+# O serviço systemd roda como usuário dedicado 'openglass'; se o repositório
+# estiver em área restrita (ex.: /root/OpenGlass), roda como root.
 #
 # Uso:
 #   sudo bash install.sh                 # instalação completa
@@ -24,7 +31,8 @@
 #   --no-uv            não instala o uv (reusa o existente)
 #   --no-symlinks      não cria symlinks em /usr/local/bin
 #   --text             força prompts em modo texto (sem TUI; útil p/ automação)
-#   -d DIR             diretório do repositório (padrão /opt/openglass)
+#   -d DIR             diretório com o repositório JÁ baixado (padrão: este
+#                      diretório, onde o install.sh está)
 #   -c DIR             diretório de configuração (padrão /etc/openglass)
 # ---------------------------------------------------------------------------
 
@@ -33,8 +41,10 @@ set -euo pipefail
 C_RED='\033[0;31m'; C_GREEN='\033[0;32m'; C_YELLOW='\033[1;33m'
 C_CYAN='\033[0;36m'; C_BOLD='\033[1m'; C_RESET='\033[0m'
 
-REPO_URL="https://github.com/Glledson/OpenGlass.git"
-REPO_DIR="/opt/openglass"
+# Diretório onde este script está — é o repositório já baixado (default).
+SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+
+REPO_DIR="$SELF_DIR"
 CONFIG_DIR="/etc/openglass"
 APT_LOG="/var/log/openglass-install.log"
 BANNER="OpenGlass — instalador"
@@ -71,7 +81,7 @@ Opções:
   --no-uv          não instala o uv (reusa o existente)
   --no-symlinks    não cria symlinks em /usr/local/bin
   --text           força prompts em modo texto (sem whiptail)
-  -d DIR           diretório do repositório (padrão /opt/openglass)
+  -d DIR           diretório com o repositório JÁ baixado (padrão: este)
   -c DIR           diretório de configuração (padrão /etc/openglass)
   -h, --help       mostra esta ajuda
 EOF
@@ -391,15 +401,23 @@ step_uv() {
 step_config_dir() {
     if [ -d "$CONFIG_DIR" ]; then
         info "$CONFIG_DIR já existe — verificando idempotência…"
+        local -a items=()
+        if [ -s "$CONFIG_FILE" ] && [ -s "$DEVICES_FILE" ]; then
+            items+=("Usar existentes" "Manter openglass.yaml e devices.yaml atuais")
+        fi
+        items+=(
+            "Reconfigurar" "Gerar tudo do zero (backup do existente)"
+            "Editar" "Manter ativos atuais e complementar a configuração"
+            "Cancelar" "Abortar a instalação"
+        )
         if menu_select "Instalação existente" \
             "Foram encontrados arquivos em $CONFIG_DIR. O que deseja fazer?" \
-            "Reconfigurar" "Gerar tudo do zero (backup do existente)" \
-            "Editar" "Manter ativos atuais e complementar a configuração" \
-            "Cancelar" "Abortar a instalação"; then
+            "${items[@]}"; then
             case "$REPLY" in
-                Reconfigurar) INSTALL_MODE="fresh" ;;
-                Editar)       INSTALL_MODE="edit" ;;
-                Cancelar)     fail "instalação cancelada pelo usuário" ;;
+                "Usar existentes") INSTALL_MODE="keep" ;;
+                Reconfigurar)      INSTALL_MODE="fresh" ;;
+                Editar)            INSTALL_MODE="edit" ;;
+                Cancelar)          fail "instalação cancelada pelo usuário" ;;
             esac
         else
             fail "instalação cancelada pelo usuário"
@@ -420,19 +438,19 @@ backup_file() { # $1=arquivo — copia para .bak.<timestamp>
 }
 
 # ---------------------------------------------------------------------------
-# 7. Clone + dependências
+# 7. Repositório (já baixado) + dependências
 # ---------------------------------------------------------------------------
-step_clone() {
-    info "Preparando repositório em $REPO_DIR …"
-    if [ -d "$REPO_DIR/.git" ]; then
-        ok "repositório já existe; atualizando…"
-        git -C "$REPO_DIR" pull --ff-only
-    elif [ -e "$REPO_DIR" ]; then
-        fail "$REPO_DIR existe mas não é um clone do OpenGlass"
-    else
-        git clone "$REPO_URL" "$REPO_DIR"
-        ok "repositório clonado"
+step_repo() {
+    info "Usando repositório em $REPO_DIR …"
+    if [ ! -d "$REPO_DIR" ] \
+        || [ ! -f "$REPO_DIR/pyproject.toml" ] \
+        || [ ! -d "$REPO_DIR/src/openglass" ] \
+        || [ ! -d "$REPO_DIR/nodes" ]; then
+        fail "$REPO_DIR não é um repositório OpenGlass válido.
+Baixe o projeto antes (ex.: git clone https://github.com/Glledson/OpenGlass.git)
+e rode este install.sh de dentro do diretório baixado (ou use -d DIR)."
     fi
+    ok "repositório encontrado"
     info "Instalando dependências (uv sync)…"
     [ -x "$UV_BIN" ] || UV_BIN="$(command -v uv 2>/dev/null || true)"
     if [ -z "$UV_BIN" ]; then
@@ -798,12 +816,34 @@ make_symlinks() {
 # ---------------------------------------------------------------------------
 # Serviço systemd
 # ---------------------------------------------------------------------------
+_user_can_read() { # $1=usuário  $2=arquivo — 0 se o usuário consegue ler
+    if command -v runuser >/dev/null 2>&1; then
+        runuser -u "$1" -- test -r "$2" 2>/dev/null
+    elif command -v su >/dev/null 2>&1; then
+        su -s /bin/sh "$1" -c "test -r \"$2\"" >/dev/null 2>&1
+    else
+        return 1
+    fi
+}
+
 install_service() {
     [ "$DO_SERVICE" -eq 1 ] || return 0
     command -v systemctl >/dev/null 2>&1 || { warn "systemd não encontrado — pule o serviço web"; return 0; }
     info "Criando unit do systemd (openglass.service)…"
     id openglass >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin openglass
-    chown -R openglass:openglass "$CONFIG_DIR" 2>/dev/null || true
+
+    # Usuário do serviço: openglass quando o repositório é acessível a ele;
+    # caso contrário (ex.: repo em /root/OpenGlass), roda como root.
+    local service_user="root"
+    if _user_can_read openglass "$REPO_DIR/.venv/bin/openglass-web"; then
+        service_user="openglass"
+    fi
+    if [ "$service_user" = "root" ]; then
+        warn "repositório em área restrita ($REPO_DIR) — serviço rodará como root"
+        chown -R root:root "$CONFIG_DIR" 2>/dev/null || true
+    else
+        chown -R openglass:openglass "$CONFIG_DIR" 2>/dev/null || true
+    fi
 
     cat > /etc/systemd/system/openglass.service <<EOF
 [Unit]
@@ -813,8 +853,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=openglass
-Group=openglass
+$( [ "$service_user" = "openglass" ] && printf 'User=%s\nGroup=%s\n' "$service_user" "$service_user" )
 WorkingDirectory=$REPO_DIR
 ExecStart=$REPO_DIR/.venv/bin/openglass-web
 Restart=on-failure
@@ -825,7 +864,7 @@ WantedBy=multi-user.target
 EOF
     systemctl daemon-reload
     systemctl enable --now openglass
-    ok "serviço openglass ativo (http://$(hostname -I 2>/dev/null | awk '{print $1}'):8000)"
+    ok "serviço openglass ativo (usuário: $service_user, http://$(hostname -I 2>/dev/null | awk '{print $1}'):8000)"
 }
 
 # ---------------------------------------------------------------------------
@@ -865,12 +904,16 @@ main() {
     step_packages
     step_uv
     step_config_dir
-    step_clone
-    prefill_site_from_config
-    wizard_site
-    write_site_config
-    wizard_devices
-    write_devices_config
+    step_repo
+    if [ "$INSTALL_MODE" = "keep" ]; then
+        ok "mantendo openglass.yaml e devices.yaml existentes"
+    else
+        prefill_site_from_config
+        wizard_site
+        write_site_config
+        wizard_devices
+        write_devices_config
+    fi
     write_env
     make_symlinks
     install_service
@@ -885,8 +928,13 @@ main() {
         warn "o CLI retornou erro — revise $DEVICES_FILE"
     fi
 
-    show_msg "Concluído" \
+    if [ "$INSTALL_MODE" = "keep" ]; then
+        show_msg "Concluído" \
+"OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nConfiguração: mantida (não alterada)\n\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
+    else
+        show_msg "Concluído" \
 "OpenGlass instalado!\n\nConfig      : $CONFIG_DIR\nRepositório : $REPO_DIR\nAtivos      : ${#DEV_NAMES[@]} novo(s) em $DEVICES_FILE\n\nCLI : openglass --device <nome> --command ping --param ip=8.8.8.8\nWeb : openglass-web  (http://<ip>:8000)"
+    fi
 }
 
 main "$@"

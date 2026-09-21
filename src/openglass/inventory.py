@@ -64,7 +64,7 @@ class Vrf(BaseModel):
     ipv6: VrfFamily | None = None
 
 
-# Mapeia o `nos` usado no hyperglass para o device_type do Netmiko.
+# Mapeia o `nos` do inventário para o device_type do Netmiko.
 _NETMIKO_DEVICE_TYPE: dict[str, str] = {
     "cisco": "cisco_ios",
     "cisco_ios": "cisco_ios",
