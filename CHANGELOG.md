@@ -3,7 +3,7 @@
 Todas as mudanças relevantes do OpenGlass são documentadas aqui. Formato
 inspirado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
-## [1.2.0] — visualização completa no Huawei VRP e bloqueio de faixas/ASNs reservados
+## [1.2.0] — 2026-09-29
 
 ### Visualizador de Community no Huawei VRP
 
@@ -403,4 +403,5 @@ inspirado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 ### Testes
 - Suíte ampliada de 165 para **167 testes**.
 
+[1.2.0]: https://github.com/Glledson/OpenGlass/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Glledson/OpenGlass/compare/v1.0.0...v1.1.0
