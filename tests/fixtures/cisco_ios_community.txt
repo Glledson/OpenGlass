@@ -1,0 +1,25 @@
+BGP table version is 121907614, local router ID is 45.5.40.0
+Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
+              r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
+              x best-external, a additional-path, c RIB-compressed, 
+              t secondary path, L long-lived-stale,
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+     Network          Next Hop            Metric LocPrf Weight Path
+ *    45.6.136.0/24    187.16.217.33                 200      0 266136 i
+ *>                    187.16.217.33                 200      0 266136 i
+ *    45.6.136.0/23    187.16.217.33                 200      0 266136 i
+ *                     187.16.217.33                 200      0 266136 i
+ *    45.6.137.0/24    187.16.217.33                 200      0 266136 i
+ *>                    187.16.217.33                 200      0 266136 i
+ *    45.6.139.0/24    187.16.217.33                 200      0 266136 i
+ *                     187.16.217.33                 200      0 266136 i
+ *    45.224.24.0/22   187.16.217.33                 200      0 266136 267636 i
+ *                     187.16.217.33                 200      0 266136 267636 i
+ *    45.232.128.0/24  45.68.76.100                  300      0 265282 267268 i
+ *>                    45.68.76.100                  300      0 265282 267268 i
+ *    45.232.128.0/22  45.68.76.100                  300      0 265282 267268 i
+ *>                    45.68.76.100                  300      0 265282 267268 i
+ *    45.232.129.0/24  45.68.76.100                  300      0 265282 267268 i
+ *>                    45.68.76.100                  300      0 265282 267268 i

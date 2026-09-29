@@ -1,0 +1,7 @@
+{
+  "type": "bgp_prefix",
+  "nos": "huawei_vrp",
+  "status": "not_found",
+  "prefix": "45.0.0.0/24",
+  "message": "Prefixo não está na tabela BGP"
+}

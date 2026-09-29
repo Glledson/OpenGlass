@@ -1,0 +1,11 @@
+  PING 192.88.148.1: 56  data bytes, press CTRL_C to break
+    Request time out
+    Request time out
+    Request time out
+    Request time out
+    Request time out
+
+  --- 192.88.148.1 ping statistics ---
+    5 packet(s) transmitted
+    0 packet(s) received
+    100.00% packet loss

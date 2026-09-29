@@ -1,0 +1,62 @@
+{
+  "type": "bgp_community",
+  "nos": "huawei_vrp",
+  "community": "65001:40100",
+  "total_paths": 3,
+  "total_prefixes": 3,
+  "declared_total": 3,
+  "origin_count": 1,
+  "best_paths": 3,
+  "origins": [
+    {
+      "origin_as": "local",
+      "is_local": true,
+      "next_hops": [
+        "0.0.0.0"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "198.51.100.0/23",
+          "next_hop": "0.0.0.0",
+          "best": true,
+          "communities": [
+            "65001:1000",
+            "65001:10301",
+            "65001:10400",
+            "65001:20100",
+            "65001:40100"
+          ]
+        },
+        {
+          "prefix": "198.51.100.0/24",
+          "next_hop": "0.0.0.0",
+          "best": true,
+          "communities": [
+            "65001:1000",
+            "65001:40100"
+          ]
+        },
+        {
+          "prefix": "198.51.101.0/24",
+          "next_hop": "0.0.0.0",
+          "best": true,
+          "communities": [
+            "65001:1000",
+            "65001:40100"
+          ]
+        }
+      ],
+      "best_paths": 3,
+      "paths": 3,
+      "prefixes": [
+        "198.51.100.0/23",
+        "198.51.100.0/24",
+        "198.51.101.0/24"
+      ],
+      "prefixes_truncated": false
+    }
+  ],
+  "capped_origins": false,
+  "capped_prefixes": false
+}

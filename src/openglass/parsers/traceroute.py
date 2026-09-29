@@ -6,7 +6,7 @@ sonda). Exemplo de entrada:
     Type escape sequence to abort.
     Tracing the route to 1.1.1.1
     VRF info: (vrf in name/id, vrf out name/id)
-      1 10.8.2.241 [AS 265269] 40 msec 19 msec 6 msec
+      1 10.0.0.241 [AS 265269] 40 msec 19 msec 6 msec
       2 10.32.0.158 [AS 265269] 13 msec 14 msec 14 msec
       3 45.68.72.137 [AS 265269] 14 msec 15 msec 14 msec
       4 1.1.1.1 [AS 13335] 14 msec 14 msec 14 msec

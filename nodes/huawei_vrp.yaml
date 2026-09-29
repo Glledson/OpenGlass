@@ -1,0 +1,100 @@
+# Perfil de comandos para o NOS huawei_vrp (VRP 8.x / NetEngine).
+#
+# `commands:` define uma WHITELIST do NOS e os formatos de cada comando.
+# O template pode ser uma string ou um mapa por família; a engine escolhe a
+# variante pelo parâmetro de endereço informado pelo usuário.
+#
+# Placeholders:
+#   $<param>          parâmetro informado pelo usuário (declarado em `params`)
+#   $source_address   preenchido automaticamente com source_address do VRF do
+#                     device (ipv4/ipv6 conforme o destino) — nunca vem do usuário
+#   $prefix_address   endereço do prefixo informado, sem a máscara
+#   $prefix_length    tamanho da máscara do prefixo informado
+#   $as_path_regexp   preenchido automaticamente com a regex montada a partir
+#                     dos ASNs informados no parâmetro `asn`
+# Tipos de parâmetro: destination | ip | prefix | hostname | asn | community
+# `timeout:` override do timeout de leitura (default: DEFAULT_COMMAND_TIMEOUT)
+# `parser:` nome de um parser registrado em openglass/parsers. `ping`,
+# `traceroute` e `bgp_prefix` têm implementação para IOS e para VRP: o
+# dispatch em `parsers/dispatch.py` escolhe pelo formato da saída devolvida,
+# então o mesmo nome serve aos dois NOSes.
+#
+# Notas do VRP (verificadas em NetEngine 8000, VRP 8.200):
+# - `display bgp routing-table` NÃO aceita CIDR: quer endereço e máscara como
+#   argumentos separados (`1.1.1.0 24`), por isso os placeholders derivados.
+# - `regular-expression` não aceita a regex entre aspas: as aspas entram como
+#   caractere do padrão e a consulta volta vazia.
+# - O VRP usa `|` como separador de modificador de output, então a regex não
+#   pode conter alternância: `asn_regexp` aceita um AS por consulta.
+# - A regex tem limite de 80 caracteres no comando.
+
+commands:
+
+  bgp-route:
+    description: "BGP Route"
+    timeout: 120
+    params:
+      prefix:
+        type: prefix
+    parser: bgp_prefix
+    template:
+      ipv4: "display bgp routing-table $prefix_address $prefix_length"
+      ipv6: "display bgp ipv6 routing-table $prefix_address $prefix_length"
+
+  bgp-as-path:
+    description: "BGP AS Path"
+    # varre a tabela BGP inteira: precisa de timeout maior que os demais
+    timeout: 300
+    params:
+      asn:
+        type: asn
+    # `{asn}` = um AS. A engine envolve em `_AS_` (o wildcard do VRP); o
+    # alternância `|` colidiria com o modificador de output, então este NOS
+    # responde a um AS por consulta.
+    asn_regexp: "{asn}"
+    parser: bgp_as_path
+    template:
+      ipv4: "display bgp routing-table regular-expression $as_path_regexp"
+      ipv6: "display bgp ipv6 routing-table regular-expression $as_path_regexp"
+
+  bgp-community:
+    description: "BGP Community"
+    # O VRP imprime a community de cada prefixo numa coluna própria (`PrefVal
+    # Community`) e não tem coluna de AS path, então a tabela é lida por
+    # `read_community_table` e não pela leitura compartilhada do AS path.
+    parser: bgp_community
+    timeout: 300
+    params:
+      community:
+        type: community
+    template:
+      ipv4: "display bgp routing-table community $community"
+      ipv6: "display bgp ipv6 routing-table community $community"
+
+  ping:
+    description: "Ping"
+    timeout: 60
+    params:
+      ip:
+        type: destination
+    parser: ping
+    template:
+      ipv4: "ping -c 5 -a $source_address $ip"
+      ipv6: "ping ipv6 -c 5 -a $source_address $ip"
+
+  traceroute:
+    description: "Traceroute"
+    # O `read_timeout` é o orçamento do comando inteiro, não de cada leitura.
+    # No pior caso (destino que não responde em lugar nenhum) o VRP gasta
+    # 30 saltos × 2 sondas (`-q 2`) × 3 s do timeout padrão por sonda = 180 s
+    # só de silêncio. O valor tem de estourar essa conta, não igualar: com 180
+    # a consulta morre em `Pattern not detected` e devolve 502. 240 s fecha os
+    # 30 saltos com folga. Destino que responde antes não espera nada disso.
+    timeout: 240
+    params:
+      ip:
+        type: destination
+    parser: traceroute
+    template:
+      ipv4: "tracert -q 2 -f 1 -a $source_address $ip"
+      ipv6: "tracert -q 2 -f 1 -a $source_address $ip"

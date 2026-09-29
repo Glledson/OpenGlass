@@ -1,4 +1,4 @@
-"""CLI de validação da conexão Cisco.
+"""CLI de validação de conexão com os roteadores de borda.
 
 Permite:
 - listar devices do inventário e comandos disponíveis (whitelist do NOS)
@@ -16,7 +16,7 @@ Exit codes: 0 ok | 2 erro (inventário/conexão/comando) | 130 abortado
 
 import argparse
 import sys
-from typing import NoReturn
+from typing import Callable, NoReturn
 
 from openglass.commands import CommandNotAllowedError, CommandResult
 from openglass.commands import run as run_command
@@ -65,15 +65,57 @@ def _pick_device(devices: list[Device], reference: str | None) -> Device:
 _STATUS_MARK = {"success": "✓", "partial": "⚠", "failed": "✗"}
 
 
+# Padrão de visualizador no CLI: o mesmo `parsed.type` que a web usa, mapped
+# para um formatador. Tipo sem entrada aqui cai no genérico (JSON), nunca some.
+_PARSED_FORMATTERS: dict[str, Callable[[dict], str]] = {}
+
+
 def _format_parsed(parsed: dict) -> str | None:
-    """Resumo didático do resultado estruturado (ping, prefixo e traceroute)."""
-    if parsed.get("type") == "ping":
-        return _format_ping_parsed(parsed)
-    if parsed.get("type") == "bgp_prefix":
-        return _format_bgp_prefix_parsed(parsed)
-    if parsed.get("type") == "traceroute":
-        return _format_traceroute_parsed(parsed)
+    """Resumo didático do resultado estruturado, via VISUALIZERS do CLI."""
+    formatter = _PARSED_FORMATTERS.get(parsed.get("type", ""))
+    if formatter is not None:
+        return formatter(parsed)
     return None
+
+
+def _format_bgp_community_parsed(parsed: dict) -> str:
+    """Resumo da busca por community: quem anuncia com ela."""
+    origins = parsed.get("origins") or []
+    head = (
+        f"{parsed.get('community') or '?'} · {parsed.get('total_prefixes', 0)} prefixo(s) · "
+        f"{parsed.get('total_paths', 0)} rota(s) · "
+        f"{parsed.get('origin_count', 0)} AS(s) anunciando"
+    )
+    lines = [head]
+    for origin in origins[:10]:
+        label = "local" if origin.get("is_local") else f"AS {origin.get('origin_as')}"
+        hops = ", ".join(origin.get("next_hops") or []) or "?"
+        lines.append(
+            f"  {label:12s} {origin.get('paths', 0):3d} rota(s) via {hops}"
+        )
+    remaining = len(origins) - 10
+    if remaining > 0:
+        lines.append(f"  ... e mais {remaining} AS(s)")
+    return "\n".join(lines)
+
+
+def _format_as_path_parsed(parsed: dict) -> str:
+    """Resumo da busca por AS Path: os caminhos mais frequentes."""
+    chains = parsed.get("chains") or []
+    head = (
+        f"AS {parsed.get('asn') or '?'} · {parsed.get('total_prefixes', 0)} prefixo(s) · "
+        f"{parsed.get('total_paths', 0)} rota(s) · "
+        f"{parsed.get('unique_chains', 0)} caminho(s) distinto(s) · "
+        f"maior {parsed.get('longest_path', 0)} salto(s)"
+    )
+    lines = [head]
+    for chain in chains[:8]:
+        path = " › ".join(chain.get("as_path") or []) or "rota local"
+        lines.append(f"  {path}  ({chain.get('paths', 0)} rota(s))")
+    remaining = len(chains) - 8
+    if remaining > 0:
+        lines.append(f"  ... e mais {remaining} caminho(s)")
+    return "\n".join(lines)
 
 
 def _format_ping_parsed(parsed: dict) -> str:
@@ -251,7 +293,7 @@ def one_shot(device_name: str | None, label: str, raw_params: list[str]) -> int:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="openglass",
-        description="OpenGlass — diagnóstico de rede em roteadores de borda (Cisco)",
+        description="OpenGlass — diagnóstico de rede em roteadores de borda",
     )
     parser.add_argument("--list-devices", action="store_true",
                         help="lista os devices do inventário")
@@ -308,3 +350,13 @@ def main(argv: list[str] | None = None) -> NoReturn:
 
 if __name__ == "__main__":
     main()
+
+_PARSED_FORMATTERS.update(
+    {
+        "ping": _format_ping_parsed,
+        "bgp_prefix": _format_bgp_prefix_parsed,
+        "traceroute": _format_traceroute_parsed,
+        "bgp_as_path": _format_as_path_parsed,
+        "bgp_community": _format_bgp_community_parsed,
+    }
+)

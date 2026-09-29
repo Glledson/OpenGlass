@@ -1,0 +1,138 @@
+{
+  "type": "traceroute",
+  "nos": "huawei_vrp",
+  "status": "success",
+  "destination": "8.8.8.8",
+  "reachable": true,
+  "max_hops": 30,
+  "hops": [
+    {
+      "hop": 1,
+      "ip": "192.0.2.225",
+      "addresses": [
+        "192.0.2.225"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "192.0.2.225",
+          "ms": 4
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 3
+        }
+      ],
+      "avg_ms": 3.5
+    },
+    {
+      "hop": 2,
+      "ip": "10.8.24.73",
+      "addresses": [
+        "10.8.24.73"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "10.8.24.73",
+          "ms": 2
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 3
+        }
+      ],
+      "avg_ms": 2.5
+    },
+    {
+      "hop": 3,
+      "ip": "142.250.47.86",
+      "addresses": [
+        "142.250.47.86"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "142.250.47.86",
+          "ms": 29
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 40
+        }
+      ],
+      "avg_ms": 34.5
+    },
+    {
+      "hop": 4,
+      "ip": "209.85.244.163",
+      "addresses": [
+        "209.85.244.163",
+        "192.178.84.13"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "209.85.244.163",
+          "ms": 41
+        },
+        {
+          "type": "reply",
+          "ip": "192.178.84.13",
+          "ms": 33
+        }
+      ],
+      "avg_ms": 37.0
+    },
+    {
+      "hop": 5,
+      "ip": "142.250.238.249",
+      "addresses": [
+        "142.250.238.249",
+        "192.178.253.75"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "142.250.238.249",
+          "ms": 32
+        },
+        {
+          "type": "reply",
+          "ip": "192.178.253.75",
+          "ms": 28
+        }
+      ],
+      "avg_ms": 30.0
+    },
+    {
+      "hop": 6,
+      "ip": "8.8.8.8",
+      "addresses": [
+        "8.8.8.8"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "8.8.8.8",
+          "ms": 31
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 40
+        }
+      ],
+      "avg_ms": 35.5
+    }
+  ]
+}

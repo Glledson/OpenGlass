@@ -1,0 +1,387 @@
+{
+  "type": "bgp_community",
+  "community": "no-export",
+  "total_paths": 68,
+  "total_prefixes": 32,
+  "declared_total": null,
+  "origin_count": 12,
+  "best_paths": 23,
+  "origins": [
+    {
+      "origin_as": "19990",
+      "is_local": false,
+      "next_hops": [
+        "187.16.208.248"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "168.0.60.0/24",
+          "next_hop": "187.16.208.248",
+          "best": true
+        },
+        {
+          "prefix": "168.0.61.0/24",
+          "next_hop": "187.16.208.248",
+          "best": true
+        },
+        {
+          "prefix": "168.0.62.0/24",
+          "next_hop": "187.16.208.248",
+          "best": true
+        },
+        {
+          "prefix": "168.0.63.0/24",
+          "next_hop": "187.16.208.248",
+          "best": true
+        },
+        {
+          "prefix": "201.159.52.0",
+          "next_hop": "187.16.208.248",
+          "best": true
+        },
+        {
+          "prefix": "201.159.53.0",
+          "next_hop": "187.16.208.248",
+          "best": false
+        },
+        {
+          "prefix": "201.159.54.0",
+          "next_hop": "187.16.208.248",
+          "best": true
+        },
+        {
+          "prefix": "201.159.55.0",
+          "next_hop": "187.16.208.248",
+          "best": true
+        }
+      ],
+      "best_paths": 7,
+      "paths": 16,
+      "prefixes": [
+        "168.0.60.0/24",
+        "168.0.61.0/24",
+        "168.0.62.0/24",
+        "168.0.63.0/24",
+        "201.159.52.0",
+        "201.159.53.0",
+        "201.159.54.0",
+        "201.159.55.0"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "61621",
+      "is_local": false,
+      "next_hops": [
+        "45.68.74.89"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "45.235.160.0/23",
+          "next_hop": "45.68.74.89",
+          "best": true
+        },
+        {
+          "prefix": "45.235.162.0/23",
+          "next_hop": "45.68.74.89",
+          "best": true
+        },
+        {
+          "prefix": "170.231.208.0/23",
+          "next_hop": "45.68.74.89",
+          "best": true
+        },
+        {
+          "prefix": "170.231.210.0/23",
+          "next_hop": "45.68.74.89",
+          "best": true
+        },
+        {
+          "prefix": "177.23.252.0/23",
+          "next_hop": "45.68.74.89",
+          "best": true
+        },
+        {
+          "prefix": "177.23.254.0/23",
+          "next_hop": "45.68.74.89",
+          "best": true
+        },
+        {
+          "prefix": "186.209.222.0/23",
+          "next_hop": "45.68.74.89",
+          "best": true
+        }
+      ],
+      "best_paths": 7,
+      "paths": 14,
+      "prefixes": [
+        "45.235.160.0/23",
+        "45.235.162.0/23",
+        "170.231.208.0/23",
+        "170.231.210.0/23",
+        "177.23.252.0/23",
+        "177.23.254.0/23",
+        "186.209.222.0/23"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "267268",
+      "is_local": false,
+      "next_hops": [
+        "45.68.76.100"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "45.232.128.0/24",
+          "next_hop": "45.68.76.100",
+          "best": true
+        },
+        {
+          "prefix": "45.232.128.0/22",
+          "next_hop": "45.68.76.100",
+          "best": true
+        },
+        {
+          "prefix": "45.232.129.0/24",
+          "next_hop": "45.68.76.100",
+          "best": true
+        },
+        {
+          "prefix": "45.232.130.0/24",
+          "next_hop": "45.68.76.100",
+          "best": true
+        },
+        {
+          "prefix": "45.232.131.0/24",
+          "next_hop": "45.68.76.100",
+          "best": true
+        }
+      ],
+      "best_paths": 5,
+      "paths": 10,
+      "prefixes": [
+        "45.232.128.0/24",
+        "45.232.128.0/22",
+        "45.232.129.0/24",
+        "45.232.130.0/24",
+        "45.232.131.0/24"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "266136",
+      "is_local": false,
+      "next_hops": [
+        "187.16.217.33"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "45.6.136.0/24",
+          "next_hop": "187.16.217.33",
+          "best": true
+        },
+        {
+          "prefix": "45.6.136.0/23",
+          "next_hop": "187.16.217.33",
+          "best": false
+        },
+        {
+          "prefix": "45.6.137.0/24",
+          "next_hop": "187.16.217.33",
+          "best": true
+        },
+        {
+          "prefix": "45.6.139.0/24",
+          "next_hop": "187.16.217.33",
+          "best": false
+        }
+      ],
+      "best_paths": 2,
+      "paths": 8,
+      "prefixes": [
+        "45.6.136.0/24",
+        "45.6.136.0/23",
+        "45.6.137.0/24",
+        "45.6.139.0/24"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "265282",
+      "is_local": false,
+      "next_hops": [
+        "187.16.211.32",
+        "45.68.76.100"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "168.90.208.0/22",
+          "next_hop": "45.68.76.100",
+          "best": true
+        }
+      ],
+      "best_paths": 1,
+      "paths": 4,
+      "prefixes": [
+        "168.90.208.0/22"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "3557",
+      "is_local": false,
+      "next_hops": [
+        "187.16.217.105",
+        "45.68.72.76"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "192.5.5.0",
+          "next_hop": "45.68.72.76",
+          "best": true
+        }
+      ],
+      "best_paths": 1,
+      "paths": 4,
+      "prefixes": [
+        "192.5.5.0"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "264049",
+      "is_local": false,
+      "next_hops": [
+        "187.16.211.45"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "143.202.4.0/23",
+          "next_hop": "187.16.211.45",
+          "best": false
+        }
+      ],
+      "best_paths": 0,
+      "paths": 2,
+      "prefixes": [
+        "143.202.4.0/23"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "267473",
+      "is_local": false,
+      "next_hops": [
+        "187.16.217.33"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "192.141.187.0",
+          "next_hop": "187.16.217.33",
+          "best": false
+        }
+      ],
+      "best_paths": 0,
+      "paths": 2,
+      "prefixes": [
+        "192.141.187.0"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "267500",
+      "is_local": false,
+      "next_hops": [
+        "187.16.217.33"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "201.182.61.0",
+          "next_hop": "187.16.217.33",
+          "best": false
+        }
+      ],
+      "best_paths": 0,
+      "paths": 2,
+      "prefixes": [
+        "201.182.61.0"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "267636",
+      "is_local": false,
+      "next_hops": [
+        "187.16.217.33"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "45.224.24.0/22",
+          "next_hop": "187.16.217.33",
+          "best": false
+        }
+      ],
+      "best_paths": 0,
+      "paths": 2,
+      "prefixes": [
+        "45.224.24.0/22"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "271192",
+      "is_local": false,
+      "next_hops": [
+        "187.16.217.33"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "179.42.153.0/24",
+          "next_hop": "187.16.217.33",
+          "best": false
+        }
+      ],
+      "best_paths": 0,
+      "paths": 2,
+      "prefixes": [
+        "179.42.153.0/24"
+      ],
+      "prefixes_truncated": false
+    },
+    {
+      "origin_as": "52583",
+      "is_local": false,
+      "next_hops": [
+        "187.16.217.33"
+      ],
+      "next_hops_truncated": false,
+      "entries": [
+        {
+          "prefix": "177.87.168.0/23",
+          "next_hop": "187.16.217.33",
+          "best": false
+        }
+      ],
+      "best_paths": 0,
+      "paths": 2,
+      "prefixes": [
+        "177.87.168.0/23"
+      ],
+      "prefixes_truncated": false
+    }
+  ],
+  "capped_origins": false,
+  "capped_prefixes": false
+}

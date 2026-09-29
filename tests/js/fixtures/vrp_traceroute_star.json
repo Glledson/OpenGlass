@@ -1,0 +1,548 @@
+{
+  "type": "traceroute",
+  "nos": "huawei_vrp",
+  "status": "partial",
+  "destination": "9.9.9.9",
+  "reachable": false,
+  "max_hops": 30,
+  "hops": [
+    {
+      "hop": 1,
+      "ip": "192.0.2.225",
+      "addresses": [
+        "192.0.2.225"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "192.0.2.225",
+          "ms": 5
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 8
+        }
+      ],
+      "avg_ms": 6.5
+    },
+    {
+      "hop": 2,
+      "ip": "10.0.12.237",
+      "addresses": [
+        "10.0.12.237"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "10.0.12.237",
+          "ms": 5
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 8
+        }
+      ],
+      "avg_ms": 6.5
+    },
+    {
+      "hop": 3,
+      "ip": "172.31.232.10",
+      "addresses": [
+        "172.31.232.10"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "172.31.232.10",
+          "ms": 3
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 4
+        }
+      ],
+      "avg_ms": 3.5
+    },
+    {
+      "hop": 4,
+      "ip": "172.31.232.114",
+      "addresses": [
+        "172.31.232.114"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "172.31.232.114",
+          "ms": 7
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 6
+        }
+      ],
+      "avg_ms": 6.5
+    },
+    {
+      "hop": 5,
+      "ip": "172.31.252.93",
+      "addresses": [
+        "172.31.252.93"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "172.31.252.93",
+          "ms": 6
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 15
+        }
+      ],
+      "avg_ms": 10.5
+    },
+    {
+      "hop": 6,
+      "ip": "45.68.73.162",
+      "addresses": [
+        "45.68.73.162"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "45.68.73.162",
+          "ms": 47
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 45
+        }
+      ],
+      "avg_ms": 46.0
+    },
+    {
+      "hop": 7,
+      "ip": "200.25.36.25",
+      "addresses": [
+        "200.25.36.25"
+      ],
+      "asn": null,
+      "times": [
+        {
+          "type": "reply",
+          "ip": "200.25.36.25",
+          "ms": 45
+        },
+        {
+          "type": "reply",
+          "ip": null,
+          "ms": 49
+        }
+      ],
+      "avg_ms": 47.0
+    },
+    {
+      "hop": 8,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 9,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 10,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 11,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 12,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 13,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 14,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 15,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 16,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 17,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 18,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 19,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 20,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 21,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 22,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 23,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 24,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 25,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 26,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 27,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 28,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 29,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    },
+    {
+      "hop": 30,
+      "ip": null,
+      "addresses": [],
+      "asn": null,
+      "times": [
+        {
+          "type": "timeout",
+          "ip": null
+        },
+        {
+          "type": "timeout",
+          "ip": null
+        }
+      ],
+      "avg_ms": null
+    }
+  ]
+}

@@ -1,11 +1,19 @@
 # Perfil de comandos para o NOS cisco_ios (IOS / IOS-XE).
 #
 # `commands:` define a WHITELIST do NOS e os formatos de cada comando.
+# O template pode ser uma string ou um mapa por família; a engine escolhe a
+# variante pelo parâmetro de endereço informado pelo usuário.
+#
 # Placeholders:
 #   $<param>          parâmetro informado pelo usuário (declarado em `params`)
 #   $source_address   preenchido automaticamente com source_address do VRF do
 #                     device (ipv4/ipv6 conforme o destino) — nunca vem do usuário
-# Tipos de parâmetro: destination | ip | prefix | hostname
+#   $prefix_address   endereço do prefixo informado, sem a máscara
+#   $prefix_length    tamanho da máscara do prefixo informado
+#   $as_path_regexp   preenchido automaticamente com a regex montada a partir
+#                     dos ASNs informados no parâmetro `asn`, no formato de
+#                     `asn_regexp:`
+# Tipos de parâmetro: destination | ip | prefix | hostname | asn | community
 # `timeout:` override do timeout de leitura (default: DEFAULT_COMMAND_TIMEOUT)
 # `parser:` nome de um parser registrado em openglass/parsers (ex.: ping)
 
@@ -13,27 +21,60 @@ commands:
 
   bgp-route:
     description: "BGP Route"
-    template: "show ip bgp $prefix"
     timeout: 120
     parser: bgp_prefix
     params:
       prefix:
         type: prefix
+    template:
+      ipv4: "show bgp ipv4 unicast $prefix | exclude pathid:|Epoch"
+      ipv6: "show bgp ipv6 unicast $prefix | exclude pathid:|Epoch"
+
+  bgp-as-path:
+    description: "BGP AS Path"
+    # varre a tabela BGP inteira: precisa de timeout maior que os demais
+    timeout: 300
+    params:
+      asn:
+        type: asn
+    # `{asns}` = todos os AS informados, já montados como alternância. As aspas
+    # são do próprio IOS (`quote-regexp`); sem elas o `|` viraria modificador.
+    asn_regexp: '"({asns})"'
+    parser: bgp_as_path
+    template:
+      ipv4: 'show bgp ipv4 unicast quote-regexp $as_path_regexp'
+      ipv6: 'show bgp ipv6 unicast quote-regexp $as_path_regexp'
+
+  bgp-community:
+    description: "BGP Community"
+    # idem: filtro de community percorre a tabela
+    timeout: 300
+    parser: bgp_community
+    params:
+      community:
+        type: community
+    template:
+      ipv4: "show bgp ipv4 unicast community $community"
+      ipv6: "show bgp ipv6 unicast community $community"
 
   ping:
     description: "Ping"
-    template: "ping $ip source $source_address"
     timeout: 60
     parser: ping
     params:
       ip:
         type: destination
+    template:
+      ipv4: "ping $ip repeat 5 source $source_address"
+      ipv6: "ping ipv6 $ip repeat 5 source $source_address"
 
   traceroute:
     description: "Traceroute"
-    template: "traceroute $ip source $source_address"
     timeout: 90
     parser: traceroute
     params:
       ip:
         type: destination
+    template:
+      ipv4: "traceroute $ip timeout 1 probe 2 source $source_address"
+      ipv6: "traceroute ipv6 $ip timeout 1 probe 2 source $source_address"

@@ -1,0 +1,13 @@
+{
+  "type": "bgp_community",
+  "nos": "huawei_vrp",
+  "community": "65000:1",
+  "total_paths": 0,
+  "total_prefixes": 0,
+  "declared_total": 0,
+  "origin_count": 0,
+  "best_paths": 0,
+  "origins": [],
+  "capped_origins": false,
+  "capped_prefixes": false
+}

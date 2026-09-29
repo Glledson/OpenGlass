@@ -81,6 +81,7 @@ class Device(BaseModel):
     credential: Credential
     port: int = Field(default=22, ge=1, le=65535)
     nos: str = "cisco_ios"
+    asn: int | None = Field(default=None, ge=0, le=4294967295)
     network: NetworkInfo | None = None
     snmp: SnmpInfo | None = None
     vrfs: list[Vrf] | None = None

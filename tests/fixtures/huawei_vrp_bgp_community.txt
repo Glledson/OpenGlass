@@ -1,0 +1,14 @@
+ 
+ BGP Local router ID is 10.0.0.1
+ Status codes: * - valid, > - best, d - damped, x - best external, a - add path,
+               h - history,  i - internal, s - suppressed, S - Stale
+               Origin : i - IGP, e - EGP, ? - incomplete
+ RPKI validation codes: V - valid, I - invalid, N - not-found
+
+
+ Total Number of Routes: 3
+        Network            NextHop                       MED        LocPrf    PrefVal Community
+
+ *>     198.51.100.0/23    0.0.0.0                        0          10000000   0      <65001:1000>, <65001:10301>, <65001:10400>, <65001:20100>, <65001:40100>
+ *>     198.51.100.0/24    0.0.0.0                        0          10000000   0      <65001:1000>, <65001:40100>
+ *>     198.51.101.0/24    0.0.0.0                        0          10000000   0      <65001:1000>, <65001:40100>

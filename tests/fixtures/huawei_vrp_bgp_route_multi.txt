@@ -1,0 +1,23 @@
+ 
+ BGP local router ID : 10.0.0.1
+ Local AS number : 644960
+ Paths:   2 available, 1 best, 1 select, 0 best-external, 0 add-path
+ BGP routing table entry information of 8.8.8.0/24:
+ From: 192.0.2.225 (10.0.0.251)  
+ Route Duration: 11d03h11m36s
+ Direct Out-interface: Eth-Trunk0.2042
+ Original nexthop: 192.0.2.225
+ Qos information : 0x0
+ Community: <65001:1000>, <65001:1100>, <65001:1400>
+ AS-path 644970 269194 15169, origin igp, localpref 150, pref-val 0, valid, external, best, select, pre 20, validation not-found
+ Not advertised to any peer yet
+
+ BGP routing table entry information of 8.8.8.0/24:
+ From: 192.0.2.221 (10.0.0.253)  
+ Route Duration: 13d08h12m05s
+ Direct Out-interface: Eth-Trunk0.2031
+ Original nexthop: 192.0.2.221
+ Qos information : 0x0
+ Community: <65001:1000>, <65001:1100>, <65001:1300>
+ AS-path 644970 7738 15169, origin igp, localpref 150, pref-val 0, valid, external, pre 20, validation not-found, not preferred for router ID
+ Not advertised to any peer yet

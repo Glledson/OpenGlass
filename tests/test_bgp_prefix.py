@@ -15,7 +15,7 @@ TWO_PATHS = (
     "      rx pathid: 0, tx pathid: 0x0\n"
     "  Refresh Epoch 1\n"
     "  265269 15169\n"
-    "    10.8.2.241 from 10.8.2.241 (192.168.191.245)\n"
+    "    10.0.0.241 from 10.0.0.241 (192.168.191.245)\n"
     "      Origin IGP, localpref 100, valid, external\n"
     "      rx pathid: 0, tx pathid: 0\n"
 )
@@ -33,7 +33,7 @@ AGGREGATED = (
     "      rx pathid: 0, tx pathid: 0x0\n"
     "  Refresh Epoch 1\n"
     "  265269 13335, (aggregated by 13335 162.158.224.1)\n"
-    "    10.8.2.241 from 10.8.2.241 (192.168.191.245)\n"
+    "    10.0.0.241 from 10.0.0.241 (192.168.191.245)\n"
     "      Origin IGP, localpref 100, valid, external, atomic-aggregate\n"
     "      rx pathid: 0, tx pathid: 0\n"
 )

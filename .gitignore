@@ -17,6 +17,10 @@ openglass.yaml
 # Cache de teste
 .pytest_cache/
 .ruff_cache/
+node_modules/
+
+# Material de referência (não versionado)
+nodes/beta/
 
 # Metadados do Windows (WSL/Downloads)
 *:Zone.Identifier

@@ -26,12 +26,12 @@ from openglass.config import settings
 from openglass.connection import DeviceError, DeviceSession
 from openglass.inventory import InventoryError, find_device, load_inventory
 from openglass.nodes import NodeError, load_profile
-from openglass.security import ReservedRangeError, SecurityError
+from openglass.security import ReservedAsnError, ReservedRangeError, SecurityError
 from openglass.site import SiteError, load_site_config
 
 STATIC_DIR = Path(__file__).parent / "static"
 
-app = FastAPI(title="OpenGlass", version="1.0.0")
+app = FastAPI(title="OpenGlass", version="1.2.0")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
@@ -43,7 +43,11 @@ class RunRequest(BaseModel):
 
 def _security_error(exc: SecurityError) -> HTTPException:
     """Erro 400, com payload estruturado para o alerta de faixa reservada."""
-    if isinstance(exc, ReservedRangeError):
+    if isinstance(exc, ReservedRangeError | ReservedAsnError):
+        # Os dois erros de faixa reservada compartilham o mesmo alert card: o
+        # front só precisa de requested/rfc/network/purpose. No caso do AS
+        # privado, `network` carrega o intervalo numérico (ex.: 64512-65534).
+        network = getattr(exc, "network", None) or f"{exc.start}-{exc.end}"
         return HTTPException(
             status_code=400,
             detail={
@@ -52,7 +56,7 @@ def _security_error(exc: SecurityError) -> HTTPException:
                 "meta": {
                     "requested": exc.requested,
                     "rfc": exc.rfc,
-                    "network": exc.network,
+                    "network": network,
                     "purpose": exc.purpose,
                 },
             },
@@ -143,6 +147,8 @@ def run_command(request: RunRequest) -> dict:
         "output": result.raw,
         "parser": result.parser,
         "parsed": result.parsed,
+        "line_count": result.line_count,
+        "truncated": result.truncated,
     }
 
 

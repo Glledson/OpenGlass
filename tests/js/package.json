@@ -1,0 +1,13 @@
+{
+  "name": "openglass-js-tests",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Testes da interface do OpenGlass (visualizadores em JS puro dentro do index.html)",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "type": "bgp_prefix",
+  "nos": "huawei_vrp",
+  "status": "ok",
+  "prefix": "1.1.1.0/24",
+  "version": null,
+  "available": 2,
+  "best_index": 1,
+  "table": null,
+  "select": 1,
+  "router_id": "10.0.0.1",
+  "local_as": "644960",
+  "advertised": false,
+  "update_groups": [],
+  "paths": [
+    {
+      "index": 1,
+      "as_path": [
+        "644970",
+        "269194",
+        "13335"
+      ],
+      "as_path_text": "644970 269194 13335",
+      "aggregations": [
+        {
+          "asn": 13335,
+          "router": "162.158.224.1"
+        }
+      ],
+      "next_hop": "192.0.2.225",
+      "from": "192.0.2.225",
+      "originator": "10.0.0.251",
+      "origin": "IGP",
+      "localpref": 150,
+      "pref_val": 0,
+      "pref_rule": 20,
+      "metric": null,
+      "weight": null,
+      "out_interface": "Eth-Trunk0.2042",
+      "original_next_hop": "192.0.2.225",
+      "duration": "4d06h43m42s",
+      "communities": [
+        "65001:1000",
+        "65001:1100",
+        "65001:1400"
+      ],
+      "not_preferred": null,
+      "flags": [
+        "valid",
+        "external",
+        "best",
+        "select"
+      ],
+      "best": true,
+      "is_local": false,
+      "pathid": null
+    },
+    {
+      "index": 2,
+      "as_path": [
+        "644970",
+        "7738",
+        "3356",
+        "13335"
+      ],
+      "as_path_text": "644970 7738 3356 13335",
+      "aggregations": [
+        {
+          "asn": 13335,
+          "router": "162.158.224.1"
+        }
+      ],
+      "next_hop": "192.0.2.221",
+      "from": "192.0.2.221",
+      "originator": "10.0.0.253",
+      "origin": "IGP",
+      "localpref": 150,
+      "pref_val": 0,
+      "pref_rule": 20,
+      "metric": null,
+      "weight": null,
+      "out_interface": "Eth-Trunk0.2031",
+      "original_next_hop": "192.0.2.221",
+      "duration": "4d06h43m41s",
+      "communities": [
+        "65001:1000",
+        "65001:1100",
+        "65001:1300"
+      ],
+      "not_preferred": "AS-Path",
+      "flags": [
+        "valid",
+        "external"
+      ],
+      "best": false,
+      "is_local": false,
+      "pathid": null
+    }
+  ]
+}

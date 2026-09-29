@@ -815,6 +815,227 @@
       color: var(--muted);
     }
 
+    /* ---------------- padrão de visualizador ---------------- */
+    .vis-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .vis-title {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .vis-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.02rem;
+      font-weight: 700;
+    }
+
+    .vis-name .ic {
+      color: var(--accent);
+    }
+
+    .vis-sub {
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .vis-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .vis-table-wrap {
+      max-height: 340px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--field) 60%, transparent);
+    }
+
+    .vis-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: .8rem;
+    }
+
+    .vis-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      text-align: left;
+      font-family: var(--sans);
+      font-size: .66rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      background: var(--card);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .vis-table td {
+      padding: 6px 12px;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+      white-space: nowrap;
+    }
+
+    .vis-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .vis-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: .74rem;
+    }
+
+    /* ---------------- toolbar dos visualizadores interativos ---------------- */
+    .vis-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 0 0 12px;
+    }
+
+    .vis-search,
+    .vis-select {
+      background: var(--field);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font: inherit;
+      font-size: .82rem;
+      padding: 8px 11px;
+      min-width: 0;
+    }
+
+    .vis-search {
+      flex: 1 1 220px;
+    }
+
+    .vis-search:focus,
+    .vis-select:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    }
+
+    .vis-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: .78rem;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .vis-count {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: .74rem;
+      white-space: nowrap;
+    }
+
+    .vis-table th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .vis-table th.sortable:hover {
+      color: var(--accent);
+    }
+
+    /* ---------------- cadeia de AS ---------------- */
+    .as-chains {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .as-chain-row {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--field) 55%, transparent);
+      overflow: hidden;
+    }
+
+    .as-chain-row > summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 11px 13px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .as-chain-row > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .as-chain-row > summary:hover {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+    }
+
+    .as-chain {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      font-family: var(--mono);
+      font-size: .82rem;
+      min-width: 0;
+    }
+
+    .as-chip {
+      padding: 2px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      white-space: nowrap;
+    }
+
+    .as-chip.hit {
+      border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .as-arrow {
+      color: var(--muted);
+      font-style: normal;
+    }
+
+    .as-chain.as-empty {
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    .as-meta {
+      color: var(--muted);
+      font-size: .72rem;
+    }
+
+    .as-chain-row .vis-table-wrap {
+      margin: 0 13px 13px;
+      max-height: 240px;
+    }
+
     .path-count {
       flex-shrink: 0;
       padding: 6px 13px;
@@ -862,6 +1083,21 @@
       border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
       background: color-mix(in srgb, var(--ok) 9%, var(--field));
       box-shadow: 0 12px 30px -18px color-mix(in srgb, var(--ok) 55%, transparent);
+    }
+
+    /* Motivo da derrota, que só o VRP informa. Fica logo acima das flags para
+       que a pergunta "por que este caminho não foi escolhido" seja lida antes
+       dos atributos técnicos. */
+    .path-lost {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 10px;
+      padding: 6px 10px;
+      border-radius: 9px;
+      font-size: .8rem;
+      color: var(--warn);
+      background: color-mix(in srgb, var(--warn) 10%, transparent);
     }
 
     .path-head {
@@ -1069,6 +1305,19 @@
       flex-wrap: wrap;
       gap: 4px;
       margin-left: auto;
+    }
+
+    /* Next hop extra na mesma linha do salto: existe só no VRP, que repete o
+       endereço quando cada sonda saiu por um caminho diferente. A contagem
+       guarda os endereços no title para não alongar a linha do salto. */
+    .tr-alt {
+      align-self: center;
+      padding: 1px 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: .66rem;
+      color: var(--muted);
+      cursor: help;
     }
 
     .tr-probe {
@@ -1438,8 +1687,11 @@
       return `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
     }
 
-    const LABELS = { destination: "IP", ip: "IP", prefix: "Prefixo", hostname: "Host" };
+    const LABELS = { destination: "IP", ip: "IP", prefix: "Prefixo", hostname: "Host", asn: "AS (ou lista)", community: "Community" };
     let commands = [];
+    // último resultado estruturado: a card de community re-renderiza a partir
+    // dele a cada interação, sem voltar ao equipamento
+    let lastParsed = null;
 
     async function api(url, options) {
       const res = await fetch(url, options);
@@ -1463,7 +1715,7 @@
     function rfcAlertHtml(meta) {
       const m = meta || {};
       return `
-        <div class="rfc-alert-title">${I("i-shield")} Consulta bloqueada — destino em faixa reservada</div>
+        <div class="rfc-alert-title">${I("i-shield")} Consulta bloqueada — faixa reservada</div>
         <div class="rfc-alert-value">${esc(m.requested)}</div>
         <div class="rfc-alert-meta">
           <span class="rfc-card"><b>${esc(m.rfc)}</b></span>
@@ -1614,15 +1866,117 @@
       unreachable: { cls: "warn", icon: "i-warn" },
     };
 
+    // ---------------------------------------------------------------------
+    // Padrão de visualizador
+    //
+    // Todo comando com `parser:` devolve `parsed.type`. O visualizador é a
+    // funçãoregistered nesse mapa, e todas seguem o mesmo contrato:
+    //
+    //   1. cabeçalho  → `visHead({icon, title, sub, badge})`
+    //   2. números    → `visStats([{label, value, icon}])`
+    //   3. detalhe    → livre, mas usando `visTable`/`visEmpty`/`asChain`
+    //   4. estado vazio→ `visEmpty(msg)` (nunca HTML vazio)
+    //
+    // Para adicionar um: escreva a card, registre em VISUALIZERS com o mesmo
+    // `type` que o parser devolve, e pronto — `renderParsed` a encontra sozinha.
+    // ---------------------------------------------------------------------
+    const VISUALIZERS = {
+      ping: pingCard,
+      traceroute: tracerouteCard,
+      bgp_prefix: bgpPrefixCard,
+      bgp_as_path: asPathCard,
+      bgp_community: communityCard,
+    };
+
+    const ORIGIN_LABELS = { i: "IGP", e: "EGP", "?": "incompleto" };
+
+    // Communities bem conhecidas (RFC 1997 e afins). O IOS aceita esses nomes
+    // no filtro, então a consulta pode ter sido feita por nome e não por número.
+    const COMMUNITY_LABELS = {
+      "no-export": "não anunciar fora da AS",
+      "no-advertise": "não anunciar para nenhum peer",
+      "internet": "divulgável na internet",
+      "local-AS": "somente dentro da AS",
+      "no-export-subconfed": "não anunciar fora da subconfederação",
+    };
+
+    function communityLabel(value) {
+      const key = String(value || "").toLowerCase();
+      return COMMUNITY_LABELS[key] || "community numérica";
+    }
+
+    function visHead({ icon, title, sub, badge, badgeCls }) {
+      return `
+        <div class="vis-head">
+          <div class="vis-title">
+            <span class="vis-name">${icon ? I(icon) : ""}${esc(title)}</span>
+            ${sub ? `<span class="vis-sub">${esc(sub)}</span>` : ""}
+          </div>
+          ${badge ? `<span class="badge ${badgeCls || ""}">${badge}</span>` : ""}
+        </div>`;
+    }
+
+    function visStats(stats) {
+      const tiles = (stats || [])
+        .filter(Boolean)
+        .map((s) => `
+          <div class="stat"><span>${s.icon ? I(s.icon, "ic ic-sm") : ""} ${esc(s.label)}</span><strong>${esc(s.value)}</strong></div>`)
+        .join("");
+      return tiles ? `<div class="vis-stats">${tiles}</div>` : "";
+    }
+
+    function visTable({ columns, rows, empty }) {
+      if (!rows || !rows.length) return visEmpty(empty || "Nada a exibir.");
+      const head = columns
+        .map((c) => (c.sortable
+          ? `<th class="sortable" data-sort="${esc(c.key)}">${esc(c.label)}</th>`
+          : `<th>${esc(c.label)}</th>`))
+        .join("");
+      const body = rows
+        .map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`)
+        .join("");
+      return `<div class="vis-table-wrap"><table class="vis-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+
+    function visEmpty(message) {
+      return `<p class="rtt-empty">${esc(message)}</p>`;
+    }
+
+    // Cadeia de AS: cada salto é um chip e as setas dão a direção do caminho.
+    // `highlight` marca o(s) AS pesquisado(s).
+    function asChain(asPath, highlight) {
+      const list = Array.isArray(asPath) ? asPath : [];
+      if (!list.length) return `<span class="as-chain as-empty">rota local</span>`;
+      const marked = new Set(
+        String(highlight || "")
+          .split(/[,\s]+/)
+          .filter(Boolean),
+      );
+      return `<span class="as-chain">${list
+        .map((as, i) => {
+          const cls = marked.has(as) ? "as-chip hit" : "as-chip";
+          const arrow = i ? `<i class="as-arrow">›</i>` : "";
+          return `${arrow}<span class="${cls}">${esc(as)}</span>`;
+        })
+        .join("")}</span>`;
+    }
+
     function esc(value) {
       return String(value ?? "").replace(/[&<>"']/g, (c) => (
         { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
       ));
     }
 
+    // Cada sonda vira um chip. O IOS só diz se a sonda respondeu ou expirou
+    // (`!!!!!` / `.....`), mas o VRP imprime TTL e tempo de cada uma — então o
+    // title é montado com o que houver: um timeout fica sem tempo, porque
+    // inventar 0 ms faria a sonda parecer a mais rápida da fileira.
     function probeChip(probe) {
       const style = PROBE_STYLE[probe.result] || { cls: "warn", icon: "i-warn" };
-      return `<span class="probe ${style.cls}" title="${esc(probe.label)}">${I(style.icon)}</span>`;
+      const detail = [probe.label];
+      if (probe.ttl != null) detail.push(`TTL ${probe.ttl}`);
+      if (probe.time_ms != null) detail.push(`${probe.time_ms} ms`);
+      return `<span class="probe ${style.cls}" title="${esc(detail.join(" · "))}">${I(style.icon)}</span>`;
     }
 
     function pingCard(p) {
@@ -1694,6 +2048,11 @@
       if (path.localpref != null) attrs.push(`localpref ${path.localpref}`);
       if (path.metric != null) attrs.push(`metric ${path.metric}`);
       if (path.weight != null) attrs.push(`weight ${path.weight}`);
+      // `pref-val` do VRP é o valor de preferência do caminho (maior melhor),
+      // não a métrica do IOS. Aparece com o nome do VRP em vez de reaproveitar
+      // `metric`: os dois números não se comparam, e somar as duas coisas na
+      // mesma linha diria que medem a mesma grandeza.
+      if (path.pref_val != null) attrs.push(`pref-val ${path.pref_val}`);
       const originLine = [path.origin, ...attrs].filter(Boolean).join(" · ");
 
       const hasFrom = path.from && path.from !== "0.0.0.0";
@@ -1703,6 +2062,27 @@
       const aggregations = (path.aggregations || [])
         .map((a) => `<div><dt>Agregação</dt><dd class="mono">AS${esc(a.asn)} ${esc(a.router)}</dd></div>`)
         .join("");
+
+      // Campos que só o VRP devolve. Todos condicionais: a card do IOS não
+      // muda um caractere porque eles não existem lá.
+      const interfaceRow = path.out_interface
+        ? `<div><dt>Interface</dt><dd class="mono">${esc(path.out_interface)}</dd></div>`
+        : "";
+      const durationRow = path.duration
+        ? `<div><dt>Na tabela há</dt><dd>${esc(path.duration)}</dd></div>`
+        : "";
+      const communities = (path.communities || []).length
+        ? `<div><dt>Communities</dt><dd class="mono">${path.communities
+            .map((c) => esc(c))
+            .join(", ")}</dd></div>`
+        : "";
+
+      // O porquê da derrota. Com dois caminhos para o mesmo prefixo, é a
+      // pergunta que o operador faz primeiro, e o VRP responde na saída
+      // ("not preferred for router ID") enquanto o IOS não responde nada.
+      const lost = path.not_preferred
+        ? `<div class="path-lost">${I("i-warn", "ic ic-sm")} não preferido por ${esc(path.not_preferred)}</div>`
+        : "";
 
       const headIcon = isBest
         ? `<span class="path-star">${I("i-star")}</span> Melhor caminho`
@@ -1718,8 +2098,12 @@
             <div><dt>AS path</dt><dd class="mono">${esc(path.as_path_text || "—")}</dd></div>
             <div><dt>Next hop</dt><dd class="mono">${esc(path.next_hop)}${from}</dd></div>
             <div><dt>Origem</dt><dd>${esc(originLine || "—")}</dd></div>
+            ${interfaceRow}
+            ${durationRow}
+            ${communities}
             ${aggregations}
           </dl>
+          ${lost}
           <div class="flags">${flagChips(path.flags)}</div>
         </div>`;
     }
@@ -1751,6 +2135,11 @@
       const sub = [
         p.version != null ? `versão ${p.version}` : "",
         p.table ? `tabela ${esc(p.table)}` : "",
+        // o VRP não versiona a entrada nem nomeia a tabela, então esses dois
+        // campos acima ficam vazios. AS local e router ID são o que ele
+        // devolve no lugar, e sem eles o cabeçalho do VRP ficava sem contexto
+        p.local_as ? `AS ${esc(p.local_as)}` : "",
+        p.router_id ? `router ID ${esc(p.router_id)}` : "",
         advertise,
       ].filter(Boolean).join(" · ");
 
@@ -1796,10 +2185,22 @@
         <div class="tr-hop ${isLast ? "last" : ""}">
           <span class="tr-idx">${hop.hop}</span>
           <span class="tr-ip mono">${I("i-hop", "ic ic-sm")}${hop.ip ? esc(hop.ip) : "—"}</span>
+          ${trAltHops(hop)}
           ${asn}
           <span class="tr-probes">${trProbes(hop.times)}</span>
           ${avg}
         </div>`;
+    }
+
+    // Caminho alternativo do salto. No IOS o next hop é um só por salto, então
+    // `addresses` não existe; no VRP a mesma linha pode trazer um endereço por
+    // sonda, e o primeiro é o que já aparece na coluna. O extras entram como
+    // lista, com a contagem no title, para não esconder quantos são.
+    function trAltHops(hop) {
+      const extras = (hop.addresses || []).slice(1);
+      if (!extras.length) return "";
+      const titulo = `outro next hop na mesma linha: ${extras.join(", ")}`;
+      return `<span class="tr-alt mono" title="${esc(titulo)}">+${extras.length}</span>`;
     }
 
     function tracerouteCard(p) {
@@ -1826,22 +2227,307 @@
         </div>`;
     }
 
-    function renderParsed(parsed) {
-      let html = "";
-      if (parsed && parsed.type === "ping") {
-        html = pingCard(parsed);
-      } else if (parsed && parsed.type === "bgp_prefix") {
-        html = bgpPrefixCard(parsed);
-      } else if (parsed && parsed.type === "traceroute") {
-        html = tracerouteCard(parsed);
+    // Visualizador de community: o filtro já devolveu os prefixos, e a saída
+    // não repete a community. A pergunta útil é quem está anunciando com ela,
+    // então as linhas vêm aplanadas por AS de origem — a borda que vaza a
+    // community — e toda a interação acontece no cliente, sem sondar o
+    // equipamento de novo.
+    function communityRows(p) {
+      const rows = [];
+      (p.origins || []).forEach((origin) => {
+        (origin.entries || []).forEach((entry) => {
+          rows.push({
+            origin_as: origin.is_local ? "" : origin.origin_as,
+            local: !!origin.is_local,
+            prefix: entry.prefix,
+            next_hop: entry.next_hop,
+            best: !!entry.best,
+            communities: (entry.communities || []).join(" "),
+            chain: (origin.next_hops || []).join(", "),
+          });
+        });
+      });
+      return rows;
+    }
+
+    // Filtro/ordenação/expansão vivem fora do render: a card é reescrita a cada
+    // interação, então guardar o estado em `communityView` faz a tabela não
+    // perder a busca nem a coluna ordenada.
+    const communityView = { term: "", sort: "origin_as", dir: 1, asFilter: "", bestOnly: false };
+
+    const COMMUNITY_COLUMNS = [
+      { key: "origin_as", label: "AS de origem", sort: "text" },
+      { key: "prefix", label: "Prefixo", sort: "text" },
+      { key: "next_hop", label: "Next hop", sort: "text" },
+      { key: "best", label: "Best", sort: "bool" },
+    ];
+
+    // Só o VRP devolve a community de cada prefixo: a saída dele tem coluna
+    // `Community`, e o IOS repete o filtro no AS path em vez de mostrar a lista.
+    // A coluna entra quando o dado existe, para a card do IOS não ganhar uma
+    // célula vazia.
+    function communityColumns(p) {
+      const temCommunities = (p.origins || []).some((o) =>
+        (o.entries || []).some((e) => e.communities && e.communities.length)
+      );
+      if (!temCommunities) return COMMUNITY_COLUMNS;
+      return [
+        COMMUNITY_COLUMNS[0],
+        COMMUNITY_COLUMNS[1],
+        { key: "communities", label: "Communities", sort: "text" },
+        COMMUNITY_COLUMNS[2],
+        COMMUNITY_COLUMNS[3],
+      ];
+    }
+
+    function communityMatches(row, view) {
+      if (view.bestOnly && !row.best) return false;
+      if (view.asFilter && row.origin_as !== view.asFilter) return false;
+      if (!view.term) return true;
+      const needle = view.term.toLowerCase();
+      return (
+        row.prefix.toLowerCase().includes(needle) ||
+        row.next_hop.toLowerCase().includes(needle) ||
+        row.origin_as.includes(needle) ||
+        (row.communities || "").toLowerCase().includes(needle)
+      );
+    }
+
+    function communitySort(rows, view) {
+      const key = view.sort;
+      const factor = view.dir;
+      return rows.slice().sort((a, b) => {
+        // best é booleano: com dir -1 os TRUE (osPrefixo interessa) vêm primeiro
+        if (key === "best") {
+          return ((a.best ? 0 : 1) - (b.best ? 0 : 1)) * factor;
+        }
+        if (key === "next_hop") {
+          return a.next_hop.localeCompare(b.next_hop, "pt-BR", { numeric: true }) * factor;
+        }
+        if (key === "origin_as") {
+          // rota local antes de qualquer AS ao ordenar crescente
+          const rank = (r) => (r.local ? "" : r.origin_as);
+          return rank(a).localeCompare(rank(b), "pt-BR", { numeric: true }) * factor;
+        }
+        return a[key].localeCompare(b[key], "pt-BR", { numeric: true }) * factor;
+      });
+    }
+
+    function communityToolbar(p, view, shown, total) {
+      const asns = (p.origins || [])
+        .map((o) => (o.is_local ? "" : o.origin_as))
+        .filter(Boolean);
+      const options = [`<option value="">todos os ASs (${asns.length})</option>`]
+        .concat(
+          asns.map((asn) => `<option value="${esc(asn)}"${view.asFilter === asn ? " selected" : ""}>AS ${esc(asn)}</option>`),
+        )
+        .join("");
+      return `
+        <div class="vis-toolbar">
+          <input
+            type="search"
+            class="vis-search"
+            id="community-search"
+            placeholder="filtrar por prefixo, next hop ou AS"
+            value="${esc(view.term)}"
+            autocomplete="off"
+          >
+          <select class="vis-select" id="community-as">${options}</select>
+          <label class="vis-toggle">
+            <input type="checkbox" id="community-best"${view.bestOnly ? " checked" : ""}>
+            só best path
+          </label>
+          <span class="vis-count" id="community-count">${shown} de ${total} prefixo${total === 1 ? "" : "s"}</span>
+        </div>`;
+    }
+
+    function communityCard(p) {
+      const searched = p.community || "";
+      const view = communityView;
+
+      const head = visHead({
+        icon: "i-flag",
+        title: "BGP Community",
+        sub: searched ? `${searched} · ${communityLabel(searched)}` : "busca por community",
+        badge: `${p.total_prefixes} prefixo${p.total_prefixes === 1 ? "" : "s"}`,
+      });
+
+      const stats = visStats([
+        { label: "Rotas", value: p.total_paths, icon: "i-route" },
+        { label: "ASs anunciando", value: p.origin_count, icon: "i-router" },
+        {
+          label: p.total_paths === p.total_prefixes ? "Prefixos" : "Prefixos distintos",
+          value: p.total_prefixes,
+          icon: "i-dest",
+        },
+        { label: "Best path", value: p.best_paths, icon: "i-check" },
+      ]);
+
+      if (!communityRows(p).length) {
+        return head + stats + visEmpty("Nenhum prefixo casou a community.");
       }
-      if (html) {
-        $parsed.innerHTML = html;
-        $parsed.classList.remove("hidden");
-      } else {
+
+      // o toolbar nasce uma vez so; filtrar e ordenar troca so o corpo, para
+      // nao destruir o campo de busca no meio da digitacao
+      const shown = communityFiltered(p, view).length;
+      return (
+        head +
+        stats +
+        communityToolbar(p, view, shown, communityRows(p).length) +
+        `<div id="community-body">${communityBody(p, view)}</div>`
+      );
+    }
+
+    function communityFiltered(p, view) {
+      const all = communityRows(p);
+      return communitySort(all.filter((row) => communityMatches(row, view)), view);
+    }
+
+    // So a tabela. Puro: nao toca no DOM, o contador quem atualiza e o refresh.
+    function communityBody(p, view) {
+      const body = communityFiltered(p, view);
+      // A celula de communities e a coluna saem da MESMA condicao: emitir a
+      // celula sem a coluna desalinha a tabela, e vice-versa.
+      const cols = communityColumns(p);
+      const comCommunities = cols.length > COMMUNITY_COLUMNS.length;
+
+      const table = visTable({
+        columns: cols.map((c) => ({
+          key: c.key,
+          label: c.key === view.sort ? `${c.label} ${view.dir < 0 ? "↓" : "↑"}` : c.label,
+          sortable: true,
+        })),
+        rows: body.map((row) => {
+          const celulas = [
+            row.local
+              ? `<span class="as-chip">local</span>`
+              : `<span class="as-chip">AS ${esc(row.origin_as)}</span>`,
+            esc(row.prefix),
+          ];
+          if (comCommunities) {
+            celulas.push(row.communities ? `<span class="mono">${esc(row.communities)}</span>` : "");
+          }
+          celulas.push(esc(row.next_hop), row.best ? `<span class="badge success">best</span>` : "");
+          return celulas;
+        }),
+        empty: "Nenhuma rota casa com o filtro.",
+      });
+
+      const notes = [];
+      if (p.capped_origins) notes.push(`Exibindo os ${(p.origins || []).length} ASs com mais rotas de ${p.origin_count}`);
+      if (p.capped_prefixes) notes.push("a lista de prefixos de alguns ASs foi truncada");
+      const note = notes.length
+        ? `<p class="vis-note">${esc(notes.join("; "))}. Use a saída bruta para ver tudo.</p>`
+        : "";
+
+      return table + note;
+    }
+
+    // Visualizador de AS Path: agrupa os prefixos por caminho, porque a
+    // pergunta real é "quem passa por este AS" e não "liste 9 mil prefixos".
+    function asPathCard(p) {
+      const chains = p.chains || [];
+      const searched = p.asn || "";
+      const shown = chains.reduce((sum, c) => sum + c.paths, 0);
+      const capped = p.capped_chains || p.capped_prefixes;
+
+      const head = visHead({
+        icon: "i-traceroute",
+        title: "BGP AS Path",
+        sub: searched ? `AS ${searched}` : "busca por caminho",
+        badge:
+          p.total_paths === p.total_prefixes
+            ? `${p.total_prefixes} prefixo${p.total_prefixes === 1 ? "" : "s"}`
+            : `${p.total_prefixes} prefixos · ${p.total_paths} rotas`,
+      });
+
+      const stats = visStats([
+        {
+          label: p.total_paths === p.total_prefixes ? "Prefixos" : "Rotas",
+          value: p.total_paths === p.total_prefixes ? p.total_prefixes : p.total_paths,
+          icon: "i-route",
+        },
+        p.total_paths === p.total_prefixes
+          ? null
+          : { label: "Prefixos distintos", value: p.total_prefixes, icon: "i-dest" },
+        { label: "Caminhos distintos", value: p.unique_chains, icon: "i-hop" },
+        { label: "Maior caminho", value: p.longest_path, icon: "i-chev" },
+        { label: "ASs envolvidos", value: p.asn_count, icon: "i-star" },
+      ]);
+
+      if (!chains.length) {
+        return head + stats + visEmpty("Nenhum caminho casou a busca.");
+      }
+
+      const body = chains
+        .map((chain, index) => {
+          const origin = ORIGIN_LABELS[chain.origin] || chain.origin || "—";
+          const label = chain.is_local
+            ? "rota local"
+            : `${chain.as_path.length} salto${chain.as_path.length === 1 ? "" : "s"}`;
+          return `
+            <details class="as-chain-row"${index === 0 ? " open" : ""}>
+              <summary>
+                ${asChain(chain.as_path, searched)}
+                <span class="as-meta">${esc(label)} · origem ${esc(origin)}</span>
+                <span class="path-count">${chain.paths} rota${chain.paths === 1 ? "" : "s"}</span>
+              </summary>
+              ${visTable({
+                columns: ["Prefixo"],
+                rows: (chain.prefixes || []).map((prefix) => [esc(prefix)]),
+                empty: "Nenhum prefixo listado.",
+              })}
+            </details>`;
+        })
+        .join("");
+
+      const note = capped
+        ? `<p class="vis-note">Exibindo os ${chains.length} caminhos mais frequentes` +
+          `${p.capped_prefixes ? ", com até 250 prefixos por caminho" : ""} de ` +
+          `${p.unique_chains}. Use a saída bruta para ver tudo.</p>`
+        : shown < p.total_paths
+          ? `<p class="vis-note">Mostrando ${shown} de ${p.total_paths} rotas.</p>`
+          : "";
+
+      return head + stats + `<div class="as-chains">${body}</div>` + note;
+    }
+
+    function renderParsed(parsed) {
+      if (!parsed) {
+        lastParsed = null;
         $parsed.innerHTML = "";
         $parsed.classList.add("hidden");
+        return;
       }
+      const render = VISUALIZERS[parsed.type];
+      if (!render) {
+        // tipo sem visualizador: mostra o estruturado como tabela, sem quebrar
+        $parsed.innerHTML =
+          visHead({ title: parsed.type, sub: "sem visualizador" }) +
+          visTable({
+            columns: ["campo", "valor"],
+            rows: Object.entries(parsed).map(([k, v]) => [
+              esc(k),
+              esc(JSON.stringify(v)),
+            ]),
+          });
+        $parsed.classList.remove("hidden");
+        return;
+      }
+      lastParsed = parsed;
+      if (parsed.type === "bgp_community") {
+        // resultado novo nao tem relacao com o filtro da consulta anterior, e o
+        // reset mora aqui para nao depender de quem disparou a consulta
+        Object.assign(communityView, {
+          term: "",
+          asFilter: "",
+          bestOnly: false,
+          sort: "origin_as",
+          dir: 1,
+        });
+      }
+      $parsed.innerHTML = render(parsed);
+      $parsed.classList.remove("hidden");
     }
 
     async function execute(event) {
@@ -1870,6 +2556,12 @@
         });
         setStatus("");
         $output.textContent = result.output;
+        if (result.truncated) {
+          setStatus(
+            `Saída grande: ${result.line_count} linhas. ` +
+            "A tela pode demorar a renderizar — use Copiar para levar o texto inteiro.",
+          );
+        }
         renderParsed(result.parsed);
         $raw.open = false;
         $result.classList.remove("hidden");
@@ -1893,6 +2585,57 @@
         setStatus("Não foi possível copiar.", "err");
       }
     });
+
+    // Controles da card de community nascem a cada render, então a delegated
+    // escuta num listener só em vez de religar evento a cada consulta.
+    $parsed.addEventListener("input", (event) => {
+      const target = event.target;
+      if (target.id === "community-search") {
+        communityView.term = target.value;
+        refreshCommunity();
+      }
+    });
+
+    $parsed.addEventListener("change", (event) => {
+      const target = event.target;
+      if (target.id === "community-as") {
+        communityView.asFilter = target.value;
+        refreshCommunity();
+      } else if (target.id === "community-best") {
+        communityView.bestOnly = target.checked;
+        refreshCommunity();
+      }
+    });
+
+    $parsed.addEventListener("click", (event) => {
+      const head = event.target.closest("th.sortable");
+      if (!head || !lastParsed || lastParsed.type !== "bgp_community") return;
+      const key = head.dataset.sort;
+      // clicar na coluna ja ordenada inverte; senao comeca crescente (A→Z).
+      // em `best` crescente ja traz os TRUE primeiro, que e o que interessa.
+      if (communityView.sort === key) {
+        communityView.dir = -communityView.dir;
+      } else {
+        communityView.sort = key;
+        communityView.dir = 1;
+      }
+      refreshCommunity();
+    });
+
+    // Filtro e ordenacao trocam so a tabela: o campo de busca, o seletor e o
+    // checkbox ficam no mesmo elemento, entao nao perdem foco nem cursor.
+    function refreshCommunity() {
+      if (!lastParsed || lastParsed.type !== "bgp_community") return;
+      const host = document.getElementById("community-body");
+      if (!host) return;
+      host.innerHTML = communityBody(lastParsed, communityView);
+      const all = communityRows(lastParsed);
+      const shown = all.filter((row) => communityMatches(row, communityView)).length;
+      const count = document.getElementById("community-count");
+      if (count) {
+        count.textContent = `${shown} de ${all.length} prefixo${all.length === 1 ? "" : "s"}`;
+      }
+    }
 
     $device.addEventListener("change", loadCommands);
     $command.addEventListener("change", renderParamField);

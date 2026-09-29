@@ -1,0 +1,41 @@
+{
+  "type": "ping",
+  "nos": "huawei_vrp",
+  "status": "failed",
+  "target": "192.88.148.1",
+  "source": null,
+  "sent": 5,
+  "received": 0,
+  "loss_percent": 100.0,
+  "success_percent": 0.0,
+  "size_bytes": 56,
+  "timeout_s": null,
+  "rtt_ms": null,
+  "probes": [
+    {
+      "symbol": ".",
+      "result": "timeout",
+      "label": "Tempo esgotado"
+    },
+    {
+      "symbol": ".",
+      "result": "timeout",
+      "label": "Tempo esgotado"
+    },
+    {
+      "symbol": ".",
+      "result": "timeout",
+      "label": "Tempo esgotado"
+    },
+    {
+      "symbol": ".",
+      "result": "timeout",
+      "label": "Tempo esgotado"
+    },
+    {
+      "symbol": ".",
+      "result": "timeout",
+      "label": "Tempo esgotado"
+    }
+  ]
+}
